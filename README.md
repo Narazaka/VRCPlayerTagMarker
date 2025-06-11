@@ -1,6 +1,6 @@
 # VRC Player Tag Marker
 
-desc
+プレイヤーごとに頭上にタグを表示するワールド用アセット
 
 ## Install
 
