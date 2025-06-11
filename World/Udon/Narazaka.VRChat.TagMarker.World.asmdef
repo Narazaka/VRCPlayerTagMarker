@@ -1,0 +1,27 @@
+{
+    "name": "Narazaka.VRChat.TagMarker.World",
+    "rootNamespace": "",
+    "references": [
+        "VRC.SDKBase",
+        "VRC.Udon",
+        "VRC.Udon.Serialization.OdinSerializer",
+        "UdonSharp.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "HAS_WORLD_SDK"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.vrchat.worlds",
+            "expression": "3",
+            "define": "HAS_WORLD_SDK"
+        }
+    ],
+    "noEngineReferences": false
+}
