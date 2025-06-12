@@ -3,7 +3,8 @@ Shader "Unlit/TagMarker"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _DisabledColor ("Disabled Color (for fixed)", Color) = (0.5, 0.5, 0.5, 1)
+        _Cutout ("Cutout Threshold", Range(0, 1)) = 0.5
+        _DisabledColor ("Disabled Color (for fixed | a=1 -> multiply | a<1 -> alphablend)", Color) = (0.5, 0.5, 0.5, 1)
         [Header(Tag Data Setting)][Space]
         _TagDataColCount ("Tag Data Column Count (max 8)", Int) = 1
         _TagDataRowCount ("Tag Data Row Count (max 32)", Int) = 8
@@ -295,6 +296,7 @@ Shader "Unlit/TagMarker"
             
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            float _Cutout;
             float4 _DisabledColor;
             int _TagDataColCount;
             int _TagDataRowCount;
@@ -305,38 +307,38 @@ Shader "Unlit/TagMarker"
             // shader variantで数制限して軽く？
 
             #define DEFINE_INSTANCED_PROP_TAG_ROW(col) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_00) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_01) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_02) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_03) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_04) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_05) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_06) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_07) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_08) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_09) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_10) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_11) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_12) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_13) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_14) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_15) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_16) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_17) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_18) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_19) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_20) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_21) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_22) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_23) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_24) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_25) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_26) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_27) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_28) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_29) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_30) \
-                UNITY_DEFINE_INSTANCED_PROP(fixed, _Tag_##col##_31)
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_00) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_01) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_02) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_03) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_04) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_05) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_06) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_07) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_08) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_09) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_10) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_11) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_12) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_13) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_14) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_15) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_16) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_17) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_18) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_19) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_20) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_21) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_22) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_23) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_24) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_25) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_26) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_27) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_28) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_29) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_30) \
+                UNITY_DEFINE_INSTANCED_PROP(float, _Tag_##col##_31)
 
             UNITY_INSTANCING_BUFFER_START(Props)
                 DEFINE_INSTANCED_PROP_TAG_ROW(0)
@@ -497,7 +499,8 @@ Shader "Unlit/TagMarker"
                     int row = floor((1 - i.uv.y) * _TagDataRowCount);
                     int index = col * MAX_ROW + row;
                     fixed4 color = tex2D(_MainTex, i.uv);
-                    color *= lerp(_DisabledColor, 1, tagStates[index]);
+                    clip(color.a - _Cutout);
+                    color = lerp(lerp(color * _DisabledColor, float4(_DisabledColor.rgb * _DisabledColor.a + color.rgb * (1 - _DisabledColor.a), color.a), _DisabledColor.a < 1), color, tagStates[index]);
                 #else
                     int subAxisMaxActiveSlotCount = 0;
                     int mainAxisActiveSlotCount = 0;
@@ -619,7 +622,7 @@ Shader "Unlit/TagMarker"
                     float2 uv = i.uv + float2(currentCol - currentSlotCol, (currentSlotRow - currentRow)) / float2(_TagDataColCount, _TagDataRowCount);
                     fixed4 color = tex2D(_MainTex, uv);
 
-                    if (mainAxisSlot < 0 || subAxisSlot < 0 || mainAxisSlot >= mainAxisActiveSlotCount || subAxisSlot >= activeSlotCountBySubAxis[mainAxisSlot]) {
+                    if (color.a < _Cutout || mainAxisSlot < 0 || subAxisSlot < 0 || mainAxisSlot >= mainAxisActiveSlotCount || subAxisSlot >= activeSlotCountBySubAxis[mainAxisSlot]) {
                         discard;
                     }
                 #endif

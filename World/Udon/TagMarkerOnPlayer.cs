@@ -8,6 +8,7 @@ namespace Narazaka.VRChat.TagMarker.World
     [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
     public class TagMarkerOnPlayer : TagMarkerRenderer
     {
+        [SerializeField] internal float scaleFromEyePosition = 1.1f;
         [UdonSynced] internal ushort dataVersion;
         [UdonSynced] internal bool[] toggleStates = new bool[TagMarkerConstants.MaxCol * TagMarkerConstants.MaxRow];
 
@@ -33,7 +34,7 @@ namespace Narazaka.VRChat.TagMarker.World
             var player = Networking.GetOwner(gameObject);
             var pos = player.GetPosition();
             var height = player.GetAvatarEyeHeightAsMeters();
-            transform.position = pos + Vector3.up * height * 1.3f;
+            transform.position = pos + Vector3.up * height * scaleFromEyePosition;
         }
     }
 }

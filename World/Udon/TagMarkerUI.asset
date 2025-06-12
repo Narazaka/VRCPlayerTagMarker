@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: TagMarkerUI
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 791e468c2fac028478b0ff2eaf8ca1a1,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 96b3e06703c58334d82e96081d3ce87b,
     type: 2}
   udonAssembly: 
   assemblyError: 
@@ -254,7 +254,7 @@ MonoBehaviour:
       Data: 
     - Name: <IsSerialized>k__BackingField
       Entry: 5
-      Data: false
+      Data: true
     - Name: _fieldAttributes
       Entry: 7
       Data: 15|System.Collections.Generic.List`1[[System.Attribute, mscorlib]], mscorlib

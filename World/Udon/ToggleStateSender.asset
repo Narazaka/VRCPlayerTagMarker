@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: ToggleStateSender
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: c0b05c9c1c9f1e84f84f8ceb75a9f7cf,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 2648497d7a14ed349957b8440daa1097,
     type: 2}
   udonAssembly: 
   assemblyError: 
