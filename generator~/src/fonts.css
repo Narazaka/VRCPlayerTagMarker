@@ -1,0 +1,10 @@
+@font-face {
+  font-family: "GenEi POPle Black";
+  src: local("GenEi POPle Black"),
+    url("/public/GenEiPOPle_v1.0/GenEiPOPle-Bk.ttf") format("truetype");
+}
+@font-face {
+  font-family: "GenEi POPle Pw Black";
+  src: local("GenEi POPle Pw Black"),
+    url("/public/GenEiPOPle_v1.0/GenEiPOPlePw-Bk.ttf") format("truetype");
+}
