@@ -20,6 +20,7 @@ TODO
 
 ## 更新履歴
 
+- 0.1.1: changelogUrl等をpackage定義に追加
 - 0.1.0: 頑張ってプレハブ組めばとりあえず最低限動く
 
 ## License
