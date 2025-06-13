@@ -182,7 +182,7 @@ function App() {
         <Title>VRC Tag Marker generator</Title>
         <Text>
           <a
-            href="https://narazaka.booth.pm/items/6837074"
+            href="https://github.com/Narazaka/VRCPlayerTagMarker"
             target="_blank"
             rel="noopener noreferrer"
           >
