@@ -18,6 +18,10 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 TODO
 
+## 更新履歴
+
+- 0.1.0: 頑張ってプレハブ組めばとりあえず最低限動く
+
 ## License
 
 [Zlib License](LICENSE.txt)
