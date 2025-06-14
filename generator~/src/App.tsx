@@ -4,6 +4,7 @@ import {
   Container,
   Grid,
   NumberInput,
+  Slider,
   Stack,
   Text,
   Title,
@@ -216,7 +217,7 @@ function App() {
               max={8}
             />
           </Grid.Col>
-          <Grid.Col span={1.5}>
+          <Grid.Col span={1}>
             <NumberInput
               size="xs"
               value={row}
@@ -226,21 +227,33 @@ function App() {
               max={32}
             />
           </Grid.Col>
-          <Grid.Col span={1}>
+          <Grid.Col span={2}>
             <NumberInput
               size="xs"
               value={cellWidth}
               onChange={(e) => setCellWidth(Number(e))}
               label="要素の幅"
             />
+            <Slider
+              value={cellWidth}
+              onChange={(value) => setCellWidth(value)}
+              min={1}
+              max={512}
+            />
           </Grid.Col>
-          <Grid.Col span={1.5}>
+          <Grid.Col span={2}>
             <NumberInput
               size="xs"
               value={cellHeight}
               onChange={(e) => setCellHeight(Number(e))}
               label="要素の高さ"
               min={0}
+            />
+            <Slider
+              value={cellHeight}
+              onChange={(value) => setCellHeight(value)}
+              min={1}
+              max={512}
             />
           </Grid.Col>
           <Grid.Col span={1}>
@@ -249,6 +262,12 @@ function App() {
               value={spacing}
               onChange={(e) => setSpacing(Number(e))}
               label="余白 ←→"
+            />
+            <Slider
+              value={spacing}
+              onChange={(value) => setSpacing(value)}
+              min={0}
+              max={128}
             />
           </Grid.Col>
           <Grid.Col span={2.5}>

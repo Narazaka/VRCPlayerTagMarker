@@ -10,6 +10,7 @@ import {
   Overlay,
   SegmentedControl,
   Checkbox,
+  TextInput,
 } from "@mantine/core";
 import type {
   VisualProps,
@@ -115,6 +116,13 @@ function VisualPropsView({
                 prop="textColor"
                 setProps={setProps}
               />
+              <TextInput
+                disabled={props.textColor == null}
+                size="xs"
+                w={w}
+                value={propsWithParent.textColor}
+                onChange={(e) => setProps({ textColor: e.currentTarget.value })}
+              />
             </WithPartial>
             <WithPartial
               prop="backgroundColor"
@@ -126,6 +134,15 @@ function VisualPropsView({
                 propsWithParent={propsWithParent}
                 prop="backgroundColor"
                 setProps={setProps}
+              />
+              <TextInput
+                disabled={props.backgroundColor == null}
+                size="xs"
+                w={w}
+                value={propsWithParent.backgroundColor}
+                onChange={(e) =>
+                  setProps({ backgroundColor: e.currentTarget.value })
+                }
               />
             </WithPartial>
           </Group>
@@ -154,6 +171,14 @@ function VisualPropsView({
                 value={propsWithParent.fontSize}
                 onChange={(value) => setProps({ fontSize: Number(value) })}
               />
+              <Slider
+                disabled={props.fontSize == null}
+                value={propsWithParent.fontSize}
+                step={1}
+                min={6}
+                max={160}
+                onChange={(value) => setProps({ fontSize: Number(value) })}
+              />
             </WithPartial>
             <WithPartial
               prop="lineHeight"
@@ -167,6 +192,14 @@ function VisualPropsView({
                 value={propsWithParent.lineHeight}
                 onChange={(value) => setProps({ lineHeight: Number(value) })}
                 step={0.1}
+              />
+              <Slider
+                disabled={props.lineHeight == null}
+                value={propsWithParent.lineHeight}
+                step={0.1}
+                min={0.5}
+                max={2}
+                onChange={(value) => setProps({ lineHeight: Number(value) })}
               />
             </WithPartial>
           </Group>
@@ -183,26 +216,32 @@ function VisualPropsView({
                 value={propsWithParent.outlineWidth}
                 onChange={(value) => setProps({ outlineWidth: Number(value) })}
               />
+              <Slider
+                disabled={props.outlineWidth == null}
+                value={propsWithParent.outlineWidth}
+                step={1}
+                min={0}
+                max={30}
+                onChange={(value) => setProps({ outlineWidth: Number(value) })}
+              />
             </WithPartial>
             <WithPartial prop="scaleX" value={props.scaleX} label="伸縮率">
-              <Stack>
-                <NumberInput
-                  disabled={props.scaleX == null}
-                  step={0.1}
-                  size="xs"
-                  w={w}
-                  value={propsWithParent.scaleX}
-                  onChange={(value) => setProps({ scaleX: Number(value) })}
-                />
-                <Slider
-                  disabled={props.scaleX == null}
-                  value={propsWithParent.scaleX}
-                  step={0.01}
-                  min={0.2}
-                  max={2}
-                  onChange={(value) => setProps({ scaleX: Number(value) })}
-                />
-              </Stack>
+              <NumberInput
+                disabled={props.scaleX == null}
+                step={0.1}
+                size="xs"
+                w={w}
+                value={propsWithParent.scaleX}
+                onChange={(value) => setProps({ scaleX: Number(value) })}
+              />
+              <Slider
+                disabled={props.scaleX == null}
+                value={propsWithParent.scaleX}
+                step={0.01}
+                min={0.2}
+                max={2}
+                onChange={(value) => setProps({ scaleX: Number(value) })}
+              />
             </WithPartial>
           </Group>
           <Group>
@@ -216,6 +255,15 @@ function VisualPropsView({
                 propsWithParent={propsWithParent}
                 prop="outlineColor"
                 setProps={setProps}
+              />
+              <TextInput
+                disabled={props.outlineColor == null}
+                size="xs"
+                w={w}
+                value={propsWithParent.outlineColor}
+                onChange={(e) =>
+                  setProps({ outlineColor: e.currentTarget.value })
+                }
               />
             </WithPartial>
             <Stack>
