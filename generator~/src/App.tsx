@@ -12,16 +12,16 @@ import {
 import { useLocalStorage } from "@mantine/hooks";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import CellPropsView from "./CellPropsView";
-import VisualPropsView from "./VisualPropsView";
 import type { CellProps } from "./util/CellProps";
-import {
-  type PartialVisualProps,
-  defaultVisualProps,
-  genWithParentVisualProps,
-  stripVisualProps,
-} from "./util/VisualProps";
 import { draw } from "./util/draw";
 import { useFonts } from "./util/fonts";
+import {
+  defaultVisualProps,
+  genWithParentVisualProps,
+  type PartialVisualProps,
+  stripVisualProps,
+} from "./util/VisualProps";
+import VisualPropsView from "./VisualPropsView";
 
 const fontsAllowedStatus = {
   ask: 0,
@@ -165,7 +165,7 @@ function App() {
     ],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fonts
   useEffect(() => {
     const canvas = targetRef.current;
     if (!canvas) return;
@@ -294,7 +294,7 @@ function App() {
                 />
               </th>
               {Array.from({ length: col }, (_, colIndex) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                // biome-ignore lint/suspicious/noArrayIndexKey: no id
                 <th key={colIndex} style={cellStyle}>
                   <VisualPropsView
                     props={colVisuals[colIndex]}
@@ -306,7 +306,7 @@ function App() {
               ))}
             </tr>
             {Array.from({ length: row }, (_, rowIndex) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+              // biome-ignore lint/suspicious/noArrayIndexKey: no id
               <tr key={rowIndex}>
                 <th style={cellStyle}>
                   <VisualPropsView
@@ -320,7 +320,7 @@ function App() {
                   const cell = cells[rowIndex]?.[colIndex];
 
                   return (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                    // biome-ignore lint/suspicious/noArrayIndexKey: no id
                     <td key={colIndex} style={cellStyle}>
                       <CellPropsView
                         props={cell}

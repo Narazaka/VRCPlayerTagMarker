@@ -4,11 +4,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import Fuse from "fuse.js";
 import { memo, useMemo, useRef } from "react";
 
-function FontOption({
-  font,
-}: {
-  font: string;
-}) {
+function FontOption({ font }: { font: string }) {
   return (
     <Combobox.Option value={font}>
       <Text component="span" ff={`"${font}"`}>

@@ -1,9 +1,9 @@
 import { Group, TextInput } from "@mantine/core";
 import chroma from "chroma-js";
 import { memo } from "react";
-import VisualPropsView from "./VisualPropsView";
 import type { CellProps } from "./util/CellProps";
 import type { WithParentVisualProps } from "./util/VisualProps";
+import VisualPropsView from "./VisualPropsView";
 
 function CellPropsView({
   props,
