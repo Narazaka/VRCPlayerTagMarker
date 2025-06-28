@@ -7,6 +7,7 @@ import {
   Slider,
   Stack,
   Text,
+  TextInput,
   Title,
 } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
@@ -15,6 +16,7 @@ import CellPropsView from "./CellPropsView";
 import type { CellProps } from "./util/CellProps";
 import { draw } from "./util/draw";
 import { useFonts } from "./util/fonts";
+import { canvasToPngWithDataBlob, saveBlobToFile } from "./util/pngHandler";
 import {
   defaultVisualProps,
   genWithParentVisualProps,
@@ -40,6 +42,7 @@ function App() {
   });
   const fonts = useFonts(fontsAllowed === fontsAllowedStatus.allow);
 
+  const [fileName, setFileName] = useState("タグマーカー");
   const [col, setCol] = useState(3);
   const [row, setRow] = useState(4);
   const [cellWidth, setCellWidth] = useState(256);
@@ -125,14 +128,23 @@ function App() {
   );
   const targetRef = useRef<HTMLCanvasElement>(null);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const target = targetRef.current;
     if (!target) return;
-    const link = document.createElement("a");
-    link.href = target.toDataURL("image/png");
-    link.download = `${"canvas"}.png`;
-    link.click();
-    link.remove();
+    const blob = await canvasToPngWithDataBlob(target, {
+      version: 1,
+      col,
+      row,
+      cellWidth,
+      cellHeight,
+      spacing,
+      baseVisual,
+      colVisuals,
+      rowVisuals,
+      cells,
+    });
+    if (!blob) return;
+    saveBlobToFile(blob, `${fileName}.vrc-tag-marker.png`);
   };
   const canvasWidth = col * cellWidth;
   const canvasHeight = row * cellHeight;
@@ -207,6 +219,14 @@ function App() {
           </Alert>
         )}
         <Grid align="center">
+          <Grid.Col span={2}>
+            <TextInput
+              size="xs"
+              value={fileName}
+              onChange={(e) => setFileName(e.target.value)}
+              label="名前"
+            />
+          </Grid.Col>
           <Grid.Col span={1}>
             <NumberInput
               size="xs"
