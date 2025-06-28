@@ -1,26 +1,26 @@
 import {
-  NumberInput,
-  Slider,
-  Group,
-  Popover,
   ActionIcon,
-  Stack,
-  ColorPicker,
   AspectRatio,
-  Overlay,
-  SegmentedControl,
   Checkbox,
+  ColorPicker,
+  Group,
+  NumberInput,
+  Overlay,
+  Popover,
+  SegmentedControl,
+  Slider,
+  Stack,
   TextInput,
 } from "@mantine/core";
+import { memo } from "react";
+import { IoColorPalette } from "react-icons/io5";
+import FontSelector from "./FontSelector";
+import useWithPartial from "./useWithPartial";
 import type {
-  VisualProps,
   PartialVisualProps,
+  VisualProps,
   WithParentVisualProps,
 } from "./util/VisualProps";
-import { memo } from "react";
-import FontSelector from "./FontSelector";
-import { IoColorPalette } from "react-icons/io5";
-import useWithPartial from "./useWithPartial";
 
 const w = 150;
 

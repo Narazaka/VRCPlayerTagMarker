@@ -1,7 +1,7 @@
+import { uniq } from "es-toolkit";
 import { useMemo } from "react";
 import { useLoadFonts } from "./loadFonts";
 import { useLocalFonts } from "./localFonts";
-import { uniq } from "es-toolkit";
 
 export function useFonts(allowLocalFonts: boolean) {
   const localFonts = useLocalFonts(allowLocalFonts);

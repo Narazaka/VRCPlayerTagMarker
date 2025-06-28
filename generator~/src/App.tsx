@@ -9,19 +9,19 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { useState, useRef, useEffect, useMemo, useReducer } from "react";
+import { useLocalStorage } from "@mantine/hooks";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import CellPropsView from "./CellPropsView";
+import VisualPropsView from "./VisualPropsView";
+import type { CellProps } from "./util/CellProps";
 import {
+  type PartialVisualProps,
   defaultVisualProps,
   genWithParentVisualProps,
   stripVisualProps,
-  type PartialVisualProps,
 } from "./util/VisualProps";
-import { useLocalStorage } from "@mantine/hooks";
-import { useFonts } from "./util/fonts";
 import { draw } from "./util/draw";
-import type { CellProps } from "./util/CellProps";
-import VisualPropsView from "./VisualPropsView";
-import CellPropsView from "./CellPropsView";
+import { useFonts } from "./util/fonts";
 
 const fontsAllowedStatus = {
   ask: 0,

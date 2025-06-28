@@ -1,11 +1,11 @@
 import { Group, Switch, Text } from "@mantine/core";
+import { useCallback } from "react";
 import {
-  defaultVisualProps,
   type PartialVisualProps,
   type VisualProps,
   type WithParentVisualProps,
+  defaultVisualProps,
 } from "./util/VisualProps";
-import { useCallback } from "react";
 
 const useWithPartial = ({
   required,

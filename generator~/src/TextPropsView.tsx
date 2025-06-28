@@ -1,14 +1,14 @@
 import {
+  ColorInput,
   Grid,
   NumberInput,
-  ColorInput,
-  Switch,
   Select,
   Slider,
+  Switch,
 } from "@mantine/core";
-import type { VisualProps } from "./util/VisualProps";
 import { memo } from "react";
 import FontSelector from "./FontSelector";
+import type { VisualProps } from "./util/VisualProps";
 
 function TextPropsView({
   text,
