@@ -4,7 +4,7 @@ import "@mantine/core/styles.css";
 import { MantineProvider } from "@mantine/core";
 import App from "./App.tsx";
 
-// biome-ignore lint/style/noNonNullAssertion: <explanation>
+// biome-ignore lint/style/noNonNullAssertion: react
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <MantineProvider>
