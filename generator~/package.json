@@ -16,6 +16,9 @@
     "chroma-js": "^3.1.2",
     "es-toolkit": "^1.36.0",
     "fuse.js": "^7.1.0",
+    "png-chunk-itxt": "^1.0.0",
+    "png-chunks-encode": "^1.0.0",
+    "png-chunks-extract": "^1.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0"
@@ -24,6 +27,8 @@
     "@biomejs/biome": "1.9.4",
     "@eslint/js": "^9.25.0",
     "@types/chroma-js": "^3.1.1",
+    "@types/png-chunks-encode": "^1.0.2",
+    "@types/png-chunks-extract": "^1.0.2",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react-swc": "^3.9.0",
