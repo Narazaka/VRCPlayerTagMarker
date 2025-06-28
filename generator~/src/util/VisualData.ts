@@ -49,7 +49,7 @@ export interface UnityVisualData {
 }
 
 export function toUnityPartialVisualProps(
-  props: PartialVisualProps,
+  props: PartialVisualProps = {},
 ): UnityPartialVisualProps {
   return {
     textColor: props.textColor ?? "",
