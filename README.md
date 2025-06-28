@@ -16,7 +16,12 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## Usage
 
-TODO
+1. Packages/VRC Player Tag Marker/World/TagMarker プレハブをシーンに配置
+2. 「タグを編集する」ボタンからWebサイトを開きタグを設定
+3. ダウンロードしたテクスチャを設定
+4. 「Make Materials」ボタンからマテリアルを作成
+5. 「Setup」ボタンを押してUIに反映
+6. サイズなどを調整して好きな所に置いてください。
 
 ## 更新履歴
 
