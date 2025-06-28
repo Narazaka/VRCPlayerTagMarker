@@ -16,7 +16,11 @@ import CellPropsView from "./CellPropsView";
 import type { CellProps } from "./util/CellProps";
 import { draw } from "./util/draw";
 import { useFonts } from "./util/fonts";
-import { canvasToPngWithDataBlob, saveBlobToFile } from "./util/pngHandler";
+import {
+  canvasToPngWithDataBlob,
+  loadPngDataFromBlob,
+  saveBlobToFile,
+} from "./util/pngHandler";
 import {
   defaultVisualProps,
   genWithParentVisualProps,
@@ -24,6 +28,7 @@ import {
   stripVisualProps,
 } from "./util/VisualProps";
 import VisualPropsView from "./VisualPropsView";
+import { Dropzone } from "@mantine/dropzone";
 
 const fontsAllowedStatus = {
   ask: 0,
@@ -128,6 +133,29 @@ function App() {
   );
   const targetRef = useRef<HTMLCanvasElement>(null);
 
+  const [file, setFile] = useState<File | null>(null);
+  useEffect(() => {
+    if (file) {
+      setFile(null);
+      loadPngDataFromBlob(file).then((data) => {
+        if (data) {
+          setFileName(
+            file.name.replace(/(\.vrc-tag-marker)?\.png$/, "") ||
+              "タグマーカー",
+          );
+          setCol(data.col || 3);
+          setRow(data.row || 4);
+          setCellWidth(data.cellWidth || 256);
+          setCellHeight(data.cellHeight || 64);
+          setSpacing(data.spacing || 6);
+          setBaseVisual(data.baseVisual || defaultVisualProps);
+          setColVisuals(data.colVisuals || []);
+          setRowVisuals(data.rowVisuals || []);
+          setCells(data.cells || []);
+        }
+      });
+    }
+  }, [file]);
   const handleDownload = async () => {
     const target = targetRef.current;
     if (!target) return;
@@ -380,6 +408,23 @@ function App() {
           style={{ maxWidth: "100%" }}
         />
       </div>
+      <Stack align="center" mt="xs">
+        <Dropzone
+          onDrop={(files) => {
+            const file = files[0];
+            if (file) {
+              setFile(file);
+            }
+          }}
+        >
+          <Stack align="center">
+            <Text>ここに画像をドロップ</Text>
+            <Text size="xs" ta="center">
+              このツールで生成した画像をドラッグ&ドロップすると、データが読み込まれます。
+            </Text>
+          </Stack>
+        </Dropzone>
+      </Stack>
     </Container>
   );
 }
