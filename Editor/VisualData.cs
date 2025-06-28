@@ -1,21 +1,18 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
-using static UnityEngine.UIElements.UxmlAttributeDescription;
 
 [assembly: InternalsVisibleTo("Narazaka.VRChat.TagMarker.World.Editor")]
 
 namespace Narazaka.VRChat.TagMarker.Editor
 {
-    [CreateAssetMenu]
-    public class VisualData : ScriptableObject
+    [Serializable]
+    public class VisualData
     {
         [SerializeField] internal int version = 1;
-        [SerializeField] internal Texture2D mainTex;
         [SerializeField] internal int col = 3;
         [SerializeField] internal int row = 4;
         [SerializeField] internal int cellWidth = 256;
@@ -25,6 +22,23 @@ namespace Narazaka.VRChat.TagMarker.Editor
         [SerializeField] internal PartialVisualProps[] colVisuals;
         [SerializeField] internal PartialVisualProps[] rowVisuals;
         [SerializeField] internal CellProp[] cells;
+        public int width => col * cellWidth;
+        public int height => row * cellHeight;
+        public Vector2 size
+        {
+            get
+            {
+                // long side is 1
+                if (width > height)
+                {
+                    return new Vector2(1, (float)height / width);
+                }
+                else
+                {
+                    return new Vector2((float)width / height, 1);
+                }
+            }
+        }
 
         [CustomEditor(typeof(VisualData))]
         public class VisualDataEditor : UnityEditor.Editor

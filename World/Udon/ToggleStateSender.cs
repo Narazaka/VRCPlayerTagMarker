@@ -8,8 +8,8 @@ namespace Narazaka.VRChat.TagMarker.World
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
     public class ToggleStateSender : UdonSharpBehaviour
     {
-        [SerializeField] internal TagMarkerUI ui;
-        [SerializeField] internal int index;
+        [SerializeField] TagMarkerUI ui;
+        [SerializeField] int index;
 
         public void Send()
         {
