@@ -1,4 +1,4 @@
-Shader "Unlit/TagMarker"
+Shader "VRCPlayerTagMarker/TagMarker"
 {
     Properties
     {
