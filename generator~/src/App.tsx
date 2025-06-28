@@ -10,6 +10,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { Dropzone } from "@mantine/dropzone";
 import { useLocalStorage } from "@mantine/hooks";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import CellPropsView from "./CellPropsView";
@@ -28,7 +29,6 @@ import {
   stripVisualProps,
 } from "./util/VisualProps";
 import VisualPropsView from "./VisualPropsView";
-import { Dropzone } from "@mantine/dropzone";
 
 const fontsAllowedStatus = {
   ask: 0,
