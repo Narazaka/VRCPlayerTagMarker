@@ -44,6 +44,11 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
         public override void OnInspectorGUI()
         {
             serializedObject.UpdateIfRequiredOrScript();
+            if (GUILayout.Button("タグを編集する (Webサイトを開きます)"))
+            {
+                Application.OpenURL("https://vrc-tag-marker.narazaka.net");
+            }
+            EditorGUILayout.HelpBox("ブラウザでタグを設定し、画像をダウンロードしてTexture欄に設定してください。", MessageType.Info);
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(texture);
             if (EditorGUI.EndChangeCheck() || data == null)
