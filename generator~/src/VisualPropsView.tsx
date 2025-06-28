@@ -72,6 +72,7 @@ function VisualPropsView({
       withParentVisualProps?: never;
       fonts: string[];
     }) {
+  if (props == null) props = {};
   const WithPartial = useWithPartial({
     required,
     setProps,
