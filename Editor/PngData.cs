@@ -62,7 +62,6 @@ namespace Narazaka.VRChat.TagMarker.Editor
                         value[chunk_length] = 0; // Null-terminate the string
                         file.Read(value, 0, (int)chunk_length);
                         string text = System.Text.Encoding.UTF8.GetString(value);
-                        Debug.Log(text);
                         return JsonUtility.FromJson<VisualData>(text);
                     }
                 }
