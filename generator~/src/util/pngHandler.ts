@@ -1,3 +1,4 @@
+import imageCompression from "browser-image-compression";
 import { decodeSync, encodeSync } from "png-chunk-itxt";
 import encodePng from "png-chunks-encode";
 import extractPng from "png-chunks-extract";
@@ -61,8 +62,11 @@ export async function canvasToPngWithDataBlob(
     canvas.toBlob(resolve, "image/png"),
   );
   if (!blob) return;
+  const compressedBlob = await imageCompression(blob as File, {
+    alwaysKeepResolution: true,
+  });
   return new Blob(
-    [addDataJson(new Uint8Array(await blob.arrayBuffer()), data)],
+    [addDataJson(new Uint8Array(await compressedBlob.arrayBuffer()), data)],
     {
       type: "image/png",
     },
