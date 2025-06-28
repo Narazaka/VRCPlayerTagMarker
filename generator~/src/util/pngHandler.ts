@@ -2,56 +2,82 @@ import imageCompression from "browser-image-compression";
 import { decodeSync, encodeSync } from "png-chunk-itxt";
 import encodePng from "png-chunks-encode";
 import extractPng from "png-chunks-extract";
-import type { VisualData } from "./VisualData";
+import { toUnityVisualData, type VisualData } from "./VisualData";
 
-const keyword = "vrcTagMarkerData";
+const jsKeyword = "vrcTagMarkerData";
+const unityKeyword = "vrcTagMarkerDataUnity";
 
-export function addDataText(png: Uint8Array, data: string) {
+export function addDataText(
+  png: Uint8Array,
+  dataItems: { [keyword: string]: string },
+) {
   const chunks = extractPng(png);
-  const iTxtChunk = {
-    name: "iTXt",
-    data: encodeSync({
-      keyword,
-      compressionFlag: false,
-      compressionMethod: 0,
-      languageTag: "",
-      translatedKeyword: "",
-      text: data,
-    }),
-  };
-  // Insert iTXt chunk before the first IDAT chunk
-  chunks.splice(
-    chunks.findIndex((p) => p.name === "IDAT"),
-    0,
-    iTxtChunk,
-  );
+  for (const [keyword, data] of Object.entries(dataItems)) {
+    const iTxtChunk = {
+      name: "iTXt",
+      data: encodeSync({
+        keyword,
+        compressionFlag: false,
+        compressionMethod: 0,
+        languageTag: "",
+        translatedKeyword: "",
+        text: data,
+      }),
+    };
+    // Insert iTXt chunk before the first IDAT chunk
+    chunks.splice(
+      chunks.findIndex((p) => p.name === "IDAT"),
+      0,
+      iTxtChunk,
+    );
+  }
   const newPng = encodePng(chunks);
   return newPng;
 }
 
-export function getDataText(png: Uint8Array) {
+export function getDataText<T extends string>(
+  png: Uint8Array,
+  ...keywords: T[]
+) {
   const chunks = extractPng(png);
+  const dataItems = {} as Record<T, string | undefined>;
   for (const chunk of chunks) {
     if (chunk.name === "iTXt") {
       const data = decodeSync(chunk.data);
-      if (data.keyword === keyword) {
-        return data.text;
+      if (keywords.includes(data.keyword as T)) {
+        dataItems[data.keyword as T] = data.text;
       }
     }
   }
+  return dataItems;
 }
 
-export function addDataJson(png: Uint8Array, data: unknown) {
-  const jsonString = JSON.stringify(data);
-  return addDataText(png, jsonString);
-}
-
-export function getDataJson<T = unknown>(png: Uint8Array) {
-  const jsonString = getDataText(png);
-  if (jsonString) {
-    return JSON.parse(jsonString) as T;
+export function addDataJson(
+  png: Uint8Array,
+  dataItems: { [keyword: string]: unknown },
+) {
+  const jsonDataItems: Record<string, string> = {};
+  for (const [keyword, data] of Object.entries(dataItems)) {
+    jsonDataItems[keyword] = JSON.stringify(data);
   }
-  return null;
+  return addDataText(png, jsonDataItems);
+}
+
+export function getDataJson<K extends Record<string, unknown>>(
+  png: Uint8Array,
+  ...keywords: (keyof K)[]
+) {
+  const jsonStrings = getDataText(png, ...(keywords as string[]));
+  const data: Partial<K> = {};
+  if (jsonStrings) {
+    for (const keyword of keywords) {
+      const jsonString = jsonStrings[keyword as string];
+      if (jsonString) {
+        data[keyword] = JSON.parse(jsonString);
+      }
+    }
+  }
+  return data;
 }
 
 export async function canvasToPngWithDataBlob(
@@ -65,8 +91,14 @@ export async function canvasToPngWithDataBlob(
   const compressedBlob = await imageCompression(blob as File, {
     alwaysKeepResolution: true,
   });
+  const png = new Uint8Array(await compressedBlob.arrayBuffer());
   return new Blob(
-    [addDataJson(new Uint8Array(await compressedBlob.arrayBuffer()), data)],
+    [
+      addDataJson(png, {
+        [jsKeyword]: data,
+        [unityKeyword]: toUnityVisualData(data),
+      }),
+    ],
     {
       type: "image/png",
     },
@@ -102,6 +134,6 @@ export function loadFromBlob(file: Blob): Promise<Uint8Array> {
 
 export async function loadPngDataFromBlob(file: Blob) {
   const png = await loadFromBlob(file);
-  const data = getDataJson<VisualData>(png);
-  return data;
+  const data = getDataJson<{ [jsKeyword]: VisualData }>(png, jsKeyword);
+  return data[jsKeyword];
 }
