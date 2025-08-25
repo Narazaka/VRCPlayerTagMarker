@@ -2,13 +2,14 @@
     "name": "Narazaka.VRChat.TagMarker.World.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:3456780c4fb2d324ab9c633d6f1b0ddb",
-        "GUID:3c1bc1267eab5884ebe7f232c09ee0d9",
-        "GUID:f70a94b0bedfa8ec50ed757f72032810",
-        "GUID:99835874ee819da44948776e0df4ff1d",
-        "GUID:dca1d7376953d624d8ec4419db92f0ad",
-        "GUID:d5f4b86486454474eb5f9fe1c56a2ef8",
-        "GUID:dee7946081244764eab36321045ddd1e"
+        "VRC.SDKBase",
+        "VRC.Udon",
+        "VRC.Udon.Serialization.OdinSerializer",
+        "UdonSharp.Runtime",
+        "Narazaka.VRChat.TagMarker.World",
+        "Narazaka.VRChat.TagMarker.World.Runtime",
+        "Narazaka.VRChat.TagMarker.Editor",
+        "UdonSharp.Editor"
     ],
     "includePlatforms": [
         "Editor"

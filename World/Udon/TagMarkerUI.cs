@@ -1,38 +1,31 @@
 ﻿using UdonSharp;
 using UnityEngine;
-using UnityEngine.UI;
 using VRC.SDKBase;
 using VRC.Udon;
 
 namespace Narazaka.VRChat.TagMarker.World
 {
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
-    public class TagMarkerUI : TagMarkerRenderer
+    public class TagMarkerUI : TagMarkerStateRenderer
     {
-        [SerializeField] TagMarkerOnPlayer tagMarkerOnPlayerInPrefab;
+        [SerializeField] TagMarkerPlayerState tagMarkerPlayerStateInPrefab;
 
-        TagMarkerOnPlayer _tagMarkerOnPlayer = null;
+        TagMarkerPlayerState _tagMarkerPlayerState = null;
 
-        TagMarkerOnPlayer tagMarkerOnPlayer
+        protected override TagMarkerPlayerState tagMarkerPlayerState
         {
             get
             {
-                if (_tagMarkerOnPlayer != null) return _tagMarkerOnPlayer;
-                _tagMarkerOnPlayer = (TagMarkerOnPlayer)Networking.FindComponentInPlayerObjects(Networking.LocalPlayer, tagMarkerOnPlayerInPrefab);
-                return _tagMarkerOnPlayer;
+                if (_tagMarkerPlayerState != null) return _tagMarkerPlayerState;
+                _tagMarkerPlayerState = (TagMarkerPlayerState)Networking.FindComponentInPlayerObjects(Networking.LocalPlayer, tagMarkerPlayerStateInPrefab);
+                return _tagMarkerPlayerState;
             }
-        }
-
-        public override void OnPlayerRestored(VRCPlayerApi player)
-        {
-            UpdateRenderer(tagMarkerOnPlayer.toggleStates);
         }
 
         public void ToggleState(int index)
         {
-            if (tagMarkerOnPlayer == null) return;
-            tagMarkerOnPlayer._ToggleState(index);
-            UpdateRenderer(tagMarkerOnPlayer.toggleStates);
+            if (tagMarkerPlayerState == null) return;
+            tagMarkerPlayerState._ToggleState(index);
         }
     }
 }

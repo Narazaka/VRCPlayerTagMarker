@@ -5,7 +5,7 @@ namespace Narazaka.VRChat.TagMarker.World
 {
     public abstract class TagMarkerRenderer : UdonSharpBehaviour
     {
-        [SerializeField] internal Renderer renderer;
+        [SerializeField] Renderer _renderer;
 
         int[] tagPropertyIds = new int[TagMarkerConstants.MaxCol * TagMarkerConstants.MaxRow];
 
@@ -17,7 +17,7 @@ namespace Narazaka.VRChat.TagMarker.World
             {
                 materialPropertyBlock.SetFloat(TagPropertyId(i), toggleStates[i] ? 1f : 0f);
             }
-            renderer.SetPropertyBlock(materialPropertyBlock);
+            _renderer.SetPropertyBlock(materialPropertyBlock);
         }
 
         int TagPropertyId(int index)

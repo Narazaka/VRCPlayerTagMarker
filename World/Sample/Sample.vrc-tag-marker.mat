@@ -1,0 +1,296 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Sample.vrc-tag-marker
+  m_Shader: {fileID: 4800000, guid: f2964d13141f2ff4f94fb9044733b6eb, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _DISPLAY_ALIGN_ROW
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 887ce112c7edb154c8ac9bf547a18b12, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Billboard: 0
+    - _Cutout: 0.5
+    - _DISPLAY: 1
+    - _TagDataColCount: 3
+    - _TagDataRowCount: 5
+    - _Tag_0_00: 0
+    - _Tag_0_01: 0
+    - _Tag_0_02: 0
+    - _Tag_0_03: 0
+    - _Tag_0_04: 0
+    - _Tag_0_05: 0
+    - _Tag_0_06: 0
+    - _Tag_0_07: 0
+    - _Tag_0_08: 0
+    - _Tag_0_09: 0
+    - _Tag_0_10: 0
+    - _Tag_0_11: 0
+    - _Tag_0_12: 0
+    - _Tag_0_13: 0
+    - _Tag_0_14: 0
+    - _Tag_0_15: 0
+    - _Tag_0_16: 0
+    - _Tag_0_17: 0
+    - _Tag_0_18: 0
+    - _Tag_0_19: 0
+    - _Tag_0_20: 0
+    - _Tag_0_21: 0
+    - _Tag_0_22: 0
+    - _Tag_0_23: 0
+    - _Tag_0_24: 0
+    - _Tag_0_25: 0
+    - _Tag_0_26: 0
+    - _Tag_0_27: 0
+    - _Tag_0_28: 0
+    - _Tag_0_29: 0
+    - _Tag_0_30: 0
+    - _Tag_0_31: 0
+    - _Tag_1_00: 0
+    - _Tag_1_01: 0
+    - _Tag_1_02: 0
+    - _Tag_1_03: 0
+    - _Tag_1_04: 0
+    - _Tag_1_05: 0
+    - _Tag_1_06: 0
+    - _Tag_1_07: 0
+    - _Tag_1_08: 0
+    - _Tag_1_09: 0
+    - _Tag_1_10: 0
+    - _Tag_1_11: 0
+    - _Tag_1_12: 0
+    - _Tag_1_13: 0
+    - _Tag_1_14: 0
+    - _Tag_1_15: 0
+    - _Tag_1_16: 0
+    - _Tag_1_17: 0
+    - _Tag_1_18: 0
+    - _Tag_1_19: 0
+    - _Tag_1_20: 0
+    - _Tag_1_21: 0
+    - _Tag_1_22: 0
+    - _Tag_1_23: 0
+    - _Tag_1_24: 0
+    - _Tag_1_25: 0
+    - _Tag_1_26: 0
+    - _Tag_1_27: 0
+    - _Tag_1_28: 0
+    - _Tag_1_29: 0
+    - _Tag_1_30: 0
+    - _Tag_1_31: 0
+    - _Tag_2_00: 0
+    - _Tag_2_01: 0
+    - _Tag_2_02: 0
+    - _Tag_2_03: 0
+    - _Tag_2_04: 0
+    - _Tag_2_05: 0
+    - _Tag_2_06: 0
+    - _Tag_2_07: 0
+    - _Tag_2_08: 0
+    - _Tag_2_09: 0
+    - _Tag_2_10: 0
+    - _Tag_2_11: 0
+    - _Tag_2_12: 0
+    - _Tag_2_13: 0
+    - _Tag_2_14: 0
+    - _Tag_2_15: 0
+    - _Tag_2_16: 0
+    - _Tag_2_17: 0
+    - _Tag_2_18: 0
+    - _Tag_2_19: 0
+    - _Tag_2_20: 0
+    - _Tag_2_21: 0
+    - _Tag_2_22: 0
+    - _Tag_2_23: 0
+    - _Tag_2_24: 0
+    - _Tag_2_25: 0
+    - _Tag_2_26: 0
+    - _Tag_2_27: 0
+    - _Tag_2_28: 0
+    - _Tag_2_29: 0
+    - _Tag_2_30: 0
+    - _Tag_2_31: 0
+    - _Tag_3_00: 0
+    - _Tag_3_01: 0
+    - _Tag_3_02: 0
+    - _Tag_3_03: 0
+    - _Tag_3_04: 0
+    - _Tag_3_05: 0
+    - _Tag_3_06: 0
+    - _Tag_3_07: 0
+    - _Tag_3_08: 0
+    - _Tag_3_09: 0
+    - _Tag_3_10: 0
+    - _Tag_3_11: 0
+    - _Tag_3_12: 0
+    - _Tag_3_13: 0
+    - _Tag_3_14: 0
+    - _Tag_3_15: 0
+    - _Tag_3_16: 0
+    - _Tag_3_17: 0
+    - _Tag_3_18: 0
+    - _Tag_3_19: 0
+    - _Tag_3_20: 0
+    - _Tag_3_21: 0
+    - _Tag_3_22: 0
+    - _Tag_3_23: 0
+    - _Tag_3_24: 0
+    - _Tag_3_25: 0
+    - _Tag_3_26: 0
+    - _Tag_3_27: 0
+    - _Tag_3_28: 0
+    - _Tag_3_29: 0
+    - _Tag_3_30: 0
+    - _Tag_3_31: 0
+    - _Tag_4_00: 0
+    - _Tag_4_01: 0
+    - _Tag_4_02: 0
+    - _Tag_4_03: 0
+    - _Tag_4_04: 0
+    - _Tag_4_05: 0
+    - _Tag_4_06: 0
+    - _Tag_4_07: 0
+    - _Tag_4_08: 0
+    - _Tag_4_09: 0
+    - _Tag_4_10: 0
+    - _Tag_4_11: 0
+    - _Tag_4_12: 0
+    - _Tag_4_13: 0
+    - _Tag_4_14: 0
+    - _Tag_4_15: 0
+    - _Tag_4_16: 0
+    - _Tag_4_17: 0
+    - _Tag_4_18: 0
+    - _Tag_4_19: 0
+    - _Tag_4_20: 0
+    - _Tag_4_21: 0
+    - _Tag_4_22: 0
+    - _Tag_4_23: 0
+    - _Tag_4_24: 0
+    - _Tag_4_25: 0
+    - _Tag_4_26: 0
+    - _Tag_4_27: 0
+    - _Tag_4_28: 0
+    - _Tag_4_29: 0
+    - _Tag_4_30: 0
+    - _Tag_4_31: 0
+    - _Tag_5_00: 0
+    - _Tag_5_01: 0
+    - _Tag_5_02: 0
+    - _Tag_5_03: 0
+    - _Tag_5_04: 0
+    - _Tag_5_05: 0
+    - _Tag_5_06: 0
+    - _Tag_5_07: 0
+    - _Tag_5_08: 0
+    - _Tag_5_09: 0
+    - _Tag_5_10: 0
+    - _Tag_5_11: 0
+    - _Tag_5_12: 0
+    - _Tag_5_13: 0
+    - _Tag_5_14: 0
+    - _Tag_5_15: 0
+    - _Tag_5_16: 0
+    - _Tag_5_17: 0
+    - _Tag_5_18: 0
+    - _Tag_5_19: 0
+    - _Tag_5_20: 0
+    - _Tag_5_21: 0
+    - _Tag_5_22: 0
+    - _Tag_5_23: 0
+    - _Tag_5_24: 0
+    - _Tag_5_25: 0
+    - _Tag_5_26: 0
+    - _Tag_5_27: 0
+    - _Tag_5_28: 0
+    - _Tag_5_29: 0
+    - _Tag_5_30: 0
+    - _Tag_5_31: 0
+    - _Tag_6_00: 0
+    - _Tag_6_01: 0
+    - _Tag_6_02: 0
+    - _Tag_6_03: 0
+    - _Tag_6_04: 0
+    - _Tag_6_05: 0
+    - _Tag_6_06: 0
+    - _Tag_6_07: 0
+    - _Tag_6_08: 0
+    - _Tag_6_09: 0
+    - _Tag_6_10: 0
+    - _Tag_6_11: 0
+    - _Tag_6_12: 0
+    - _Tag_6_13: 0
+    - _Tag_6_14: 0
+    - _Tag_6_15: 0
+    - _Tag_6_16: 0
+    - _Tag_6_17: 0
+    - _Tag_6_18: 0
+    - _Tag_6_19: 0
+    - _Tag_6_20: 0
+    - _Tag_6_21: 0
+    - _Tag_6_22: 0
+    - _Tag_6_23: 0
+    - _Tag_6_24: 0
+    - _Tag_6_25: 0
+    - _Tag_6_26: 0
+    - _Tag_6_27: 0
+    - _Tag_6_28: 0
+    - _Tag_6_29: 0
+    - _Tag_6_30: 0
+    - _Tag_6_31: 0
+    - _Tag_7_00: 0
+    - _Tag_7_01: 0
+    - _Tag_7_02: 0
+    - _Tag_7_03: 0
+    - _Tag_7_04: 0
+    - _Tag_7_05: 0
+    - _Tag_7_06: 0
+    - _Tag_7_07: 0
+    - _Tag_7_08: 0
+    - _Tag_7_09: 0
+    - _Tag_7_10: 0
+    - _Tag_7_11: 0
+    - _Tag_7_12: 0
+    - _Tag_7_13: 0
+    - _Tag_7_14: 0
+    - _Tag_7_15: 0
+    - _Tag_7_16: 0
+    - _Tag_7_17: 0
+    - _Tag_7_18: 0
+    - _Tag_7_19: 0
+    - _Tag_7_20: 0
+    - _Tag_7_21: 0
+    - _Tag_7_22: 0
+    - _Tag_7_23: 0
+    - _Tag_7_24: 0
+    - _Tag_7_25: 0
+    - _Tag_7_26: 0
+    - _Tag_7_27: 0
+    - _Tag_7_28: 0
+    - _Tag_7_29: 0
+    - _Tag_7_30: 0
+    - _Tag_7_31: 0
+    m_Colors:
+    - _DisabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_BuildTextureStacks: []

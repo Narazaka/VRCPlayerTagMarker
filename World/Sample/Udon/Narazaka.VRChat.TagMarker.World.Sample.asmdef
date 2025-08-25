@@ -1,12 +1,11 @@
 {
-    "name": "Narazaka.VRChat.TagMarker.World.Runtime",
+    "name": "Narazaka.VRChat.TagMarker.World.Sample",
     "rootNamespace": "",
     "references": [
         "VRC.SDKBase",
         "VRC.Udon",
         "VRC.Udon.Serialization.OdinSerializer",
-        "UdonSharp.Runtime",
-        "Narazaka.VRChat.TagMarker.World"
+        "UdonSharp.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

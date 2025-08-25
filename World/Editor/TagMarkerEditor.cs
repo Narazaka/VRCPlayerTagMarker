@@ -12,16 +12,17 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
     public class TagMarkerEditor : UnityEditor.Editor
     {
         SerializedProperty texture;
+        SerializedProperty materialBase;
         SerializedProperty materialOnPlayer;
         SerializedProperty materialOnUI;
+
         bool details;
+
+        SerializedProperty tagMarkerPlayerState;
         SerializedProperty toggleStateSender;
         SerializedProperty toggleStateSendersColumn;
-        SerializedProperty tagMarkerUI;
-        SerializedProperty tagView;
-        SerializedProperty tagButtonsContainer;
-        SerializedProperty tagMarkerOnPlayer;
-        SerializedProperty tagMarkerOnPlayerView;
+        SerializedProperty tagMarkerUIRendererPath;
+        SerializedProperty tagMarkerUITagButtonsContainerPath;
 
         VisualData data;
 
@@ -30,15 +31,15 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
         void OnEnable()
         {
             texture = serializedObject.FindProperty(nameof(Runtime.TagMarker.texture));
+            materialBase = serializedObject.FindProperty(nameof(Runtime.TagMarker.materialBase));
             materialOnPlayer = serializedObject.FindProperty(nameof(Runtime.TagMarker.materialOnPlayer));
             materialOnUI = serializedObject.FindProperty(nameof(Runtime.TagMarker.materialOnUI));
+
+            tagMarkerPlayerState = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerPlayerState));
             toggleStateSender = serializedObject.FindProperty(nameof(Runtime.TagMarker.ToggleStateSender));
             toggleStateSendersColumn = serializedObject.FindProperty(nameof(Runtime.TagMarker.ToggleStateSendersColumn));
-            tagMarkerUI = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerUI));
-            tagView = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagView));
-            tagButtonsContainer = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagButtonsContainer));
-            tagMarkerOnPlayer = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerOnPlayer));
-            tagMarkerOnPlayerView = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerOnPlayerView));
+            tagMarkerUIRendererPath = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerUIRendererPath));
+            tagMarkerUITagButtonsContainerPath = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerUITagButtonsContainerPath));
         }
 
         public override void OnInspectorGUI()
@@ -58,30 +59,42 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             if (texture.objectReferenceValue == null)
             {
                 data = null;
+                EditorGUILayout.HelpBox("テクスチャを設定してください", MessageType.Warning);
             }
-            if (data != null)
+            else
             {
-                EditorGUILayout.HelpBox("valid png", MessageType.Info);
+                if (data == null)
+                {
+                    EditorGUILayout.HelpBox("PNGにタグデータが含まれていません", MessageType.Error);
+                }
+                else
+                {
+                    EditorGUILayout.HelpBox("タグデータ付きPNGです", MessageType.Info);
+                }
             }
+            EditorGUILayout.PropertyField(materialBase);
             EditorGUILayout.PropertyField(materialOnPlayer);
             EditorGUILayout.PropertyField(materialOnUI);
             if (!MaterialsIsValid)
             {
+                EditorGUI.BeginDisabledGroup(data == null);
                 if (GUILayout.Button("Make Materials"))
                 {
                     MakeMaterials();
                 }
+                EditorGUI.EndDisabledGroup();
             }
+
+            EditorGUILayout.Space();
+
             details = EditorGUILayout.Foldout(details, "Details");
             if (details)
             {
+                EditorGUILayout.PropertyField(tagMarkerPlayerState);
                 EditorGUILayout.PropertyField(toggleStateSender);
                 EditorGUILayout.PropertyField(toggleStateSendersColumn);
-                EditorGUILayout.PropertyField(tagMarkerUI);
-                EditorGUILayout.PropertyField(tagView);
-                EditorGUILayout.PropertyField(tagButtonsContainer);
-                EditorGUILayout.PropertyField(tagMarkerOnPlayer);
-                EditorGUILayout.PropertyField(tagMarkerOnPlayerView);
+                EditorGUILayout.PropertyField(tagMarkerUIRendererPath);
+                EditorGUILayout.PropertyField(tagMarkerUITagButtonsContainerPath);
             }
             serializedObject.ApplyModifiedProperties();
 
@@ -93,31 +106,41 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             EditorGUI.EndDisabledGroup();
         }
 
-        bool MaterialsIsValid => materialOnPlayer.objectReferenceValue != null && materialOnUI.objectReferenceValue != null;
+        bool MaterialsIsValid => materialBase.objectReferenceValue != null && materialOnPlayer.objectReferenceValue != null && materialOnUI.objectReferenceValue != null;
 
         void MakeMaterials()
         {
+            var onBase = materialBase.objectReferenceValue as Material;
             var onPlayer = materialOnPlayer.objectReferenceValue as Material;
             var onUI = materialOnUI.objectReferenceValue as Material;
-            if (onPlayer == null)
+            if (onBase == null)
             {
                 var tex = texture.objectReferenceValue as Texture2D;
                 var texParentPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(tex));
-                var matPath = EditorUtility.SaveFilePanelInProject("material", Regex.Replace(tex.name, @"\.vrc-tag-marker", ""), "mat", "", texParentPath);
+                var matPath = EditorUtility.SaveFilePanelInProject("material", tex.name, "mat", "", texParentPath);
                 if (string.IsNullOrEmpty(matPath))
                 {
                     return;
                 }
-                onPlayer = new Material(shader);
+                onBase = new Material(shader);
+                AssetDatabase.CreateAsset(onBase, matPath);
+                materialBase.objectReferenceValue = onBase;
+            }
+            if (onPlayer == null)
+            {
+                var matPath = AssetDatabase.GetAssetPath(onBase);
+                matPath = Regex.Replace(matPath, @"\.mat$", "_OnPlayer.mat");
+                onPlayer = new Material(onBase);
+                onPlayer.parent = onBase;
                 AssetDatabase.CreateAsset(onPlayer, matPath);
                 materialOnPlayer.objectReferenceValue = onPlayer;
             }
             if (onUI == null)
             {
-                var matPath = AssetDatabase.GetAssetPath(onPlayer);
+                var matPath = AssetDatabase.GetAssetPath(onBase);
                 matPath = Regex.Replace(matPath, @"\.mat$", "_UI.mat");
-                onUI = new Material(onPlayer);
-                onUI.parent = onPlayer;
+                onUI = new Material(onBase);
+                onUI.parent = onBase;
                 AssetDatabase.CreateAsset(onUI, matPath);
                 materialOnUI.objectReferenceValue = onUI;
             }
@@ -135,11 +158,18 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                 textureImporter.SaveAndReimport();
             }
 
+            var onBase = materialBase.objectReferenceValue as Material;
             var onPlayer = materialOnPlayer.objectReferenceValue as Material;
             var onUI = materialOnUI.objectReferenceValue as Material;
-            onPlayer.SetTexture("_MainTex", tex);
-            onPlayer.SetFloat("_TagDataColCount", data.col);
-            onPlayer.SetFloat("_TagDataRowCount", data.row);
+            onBase.SetTexture("_MainTex", tex);
+            onBase.SetFloat("_TagDataColCount", data.col);
+            onBase.SetFloat("_TagDataRowCount", data.row);
+            onBase.SetFloat("_Billboard", 0);
+            onBase.SetKeyword(new UnityEngine.Rendering.LocalKeyword(shader, "VR_BILLBOARD_ENABLE_BILLBOARD"), false);
+            onBase.enableInstancing = true;
+            EditorUtility.SetDirty(onBase);
+            onPlayer.SetFloat("_Billboard", 1);
+            onPlayer.SetKeyword(new UnityEngine.Rendering.LocalKeyword(shader, "VR_BILLBOARD_ENABLE_BILLBOARD"), true);
             EditorUtility.SetDirty(onPlayer);
             onUI.SetFloat("_Billboard", 0);
             onUI.SetKeyword(new UnityEngine.Rendering.LocalKeyword(shader, "VR_BILLBOARD_ENABLE_BILLBOARD"), false);
@@ -152,43 +182,77 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             var size = data.size;
             var tagMarker = target as Runtime.TagMarker;
 
-            var uiTranform = tagMarker.tagMarkerUI.transform;
-            Undo.RecordObject(uiTranform, "Set TagMarker UI Transform");
-            uiTranform.localScale = new Vector3(size.x, size.y, 1f);
-            Undo.RecordObject(tagMarker.tagView, "Set TagMarker UI Material");
-            tagMarker.tagView.sharedMaterial = onUI;
-            Undo.RecordObject(tagMarker.tagMarkerOnPlayerView, "Set TagMarker On Player View Material");
-            tagMarker.tagMarkerOnPlayerView.sharedMaterial = onPlayer;
-            var onPlayerViewTransform = tagMarker.tagMarkerOnPlayerView.transform;
-            Undo.RecordObject(onPlayerViewTransform, "Set TagMarker On Player View Transform");
-            onPlayerViewTransform.localScale = new Vector3(size.x, size.y, size.x);
+            var tagMarkerUIs = tagMarker.GetComponentsInChildren<TagMarkerUI>(true);
+            var tagMarkerRenders = tagMarker.GetComponentsInChildren<TagMarkerRenderer>(true).Where(c => !tagMarkerUIs.Contains(c)).ToArray();
 
-            var toDeletes = new List<GameObject>();
-            foreach (Transform child in tagMarker.tagButtonsContainer)
+            foreach (var tagMarkerRender in tagMarkerRenders)
             {
-                toDeletes.Add(child.gameObject);
-            }
-            foreach (var item in toDeletes)
-            {
-                Undo.DestroyObjectImmediate(item);
-            }
-
-            var activeCells = data.cells.Where(c => !string.IsNullOrEmpty(c.text)).Select(c => (c.col, c.row)).ToHashSet();
-            for (var c = 0; c < data.col; c++)
-            {
-                var buttonsCol = PrefabUtility.InstantiatePrefab(tagMarker.ToggleStateSendersColumn, tagMarker.tagButtonsContainer) as GameObject;
-                for (var r = 0; r < data.row; r++)
+                var tagMarkerRenderSo = new SerializedObject(tagMarkerRender);
+                var renderer = tagMarkerRenderSo.FindProperty("_renderer").objectReferenceValue as Renderer;
+                Undo.RecordObject(renderer, "Set TagMarker Renderer Material");
+                if (tagMarkerRender is TagMarkerViewOnPlayer)
                 {
-                    var button = PrefabUtility.InstantiatePrefab(tagMarker.ToggleStateSender, buttonsCol.transform) as GameObject;
-                    button.name = $"ToggleStateSender_{c}_{r}";
-                    button.GetComponent<UnityEngine.UI.Button>().interactable = activeCells.Contains((c, r));
-                    var sender = button.GetComponent<ToggleStateSender>();
-                    var so = new SerializedObject(sender);
-                    so.FindProperty("ui").objectReferenceValue = tagMarker.tagMarkerUI;
-                    so.FindProperty("index").intValue = c * MAX_COL + r;
-                    so.ApplyModifiedPropertiesWithoutUndo();
+                    renderer.sharedMaterial = onPlayer;
                 }
-                Undo.RegisterCreatedObjectUndo(buttonsCol, "Create ToggleStateSenders");
+                else if (tagMarkerRender is TagMarkerView && (tagMarkerRender as TagMarkerView).showAll)
+                {
+                    renderer.sharedMaterial = onUI;
+                }
+                else
+                {
+                    renderer.sharedMaterial = onBase;
+                }
+                var onPlayerViewTransform = renderer.transform;
+                Undo.RecordObject(onPlayerViewTransform, "Set TagMarker Renderer Transform");
+                onPlayerViewTransform.localScale = new Vector3(size.x, size.y, size.x);
+                if (tagMarkerRender is TagMarkerStateInnerRenderer)
+                {
+                    tagMarkerRenderSo.FindProperty("_tagMarkerPlayerState").objectReferenceValue = tagMarker.tagMarkerPlayerState;
+                    tagMarkerRenderSo.ApplyModifiedProperties();
+                }
+            }
+
+            foreach (var tagMarkerUI in tagMarkerUIs)
+            {
+                var tagMarkerUISo = new SerializedObject(tagMarkerUI);
+                tagMarkerUISo.FindProperty("tagMarkerPlayerStateInPrefab").objectReferenceValue = tagMarker.tagMarkerPlayerState;
+                tagMarkerUISo.ApplyModifiedProperties();
+                var uiTranform = tagMarkerUI.transform;
+                Undo.RecordObject(uiTranform, "Set TagMarker UI Transform");
+                uiTranform.localScale = new Vector3(size.x, size.y, 1f);
+                var tagView = tagMarkerUI.transform.Find(tagMarker.tagMarkerUIRendererPath).GetComponent<Renderer>();
+                Undo.RecordObject(tagView, "Set TagMarker UI Material");
+                tagView.sharedMaterial = onUI;
+
+                var tagButtonsContainer = tagMarkerUI.transform.Find(tagMarker.tagMarkerUITagButtonsContainerPath);
+
+                var toDeletes = new List<GameObject>();
+                foreach (Transform child in tagButtonsContainer)
+                {
+                    toDeletes.Add(child.gameObject);
+                }
+                foreach (var item in toDeletes)
+                {
+                    Undo.DestroyObjectImmediate(item);
+                }
+
+                var activeCells = data.cells.Where(c => !string.IsNullOrEmpty(c.text)).Select(c => (c.col, c.row)).ToHashSet();
+                for (var c = 0; c < data.col; c++)
+                {
+                    var buttonsCol = PrefabUtility.InstantiatePrefab(tagMarker.ToggleStateSendersColumn, tagButtonsContainer) as GameObject;
+                    for (var r = 0; r < data.row; r++)
+                    {
+                        var button = PrefabUtility.InstantiatePrefab(tagMarker.ToggleStateSender, buttonsCol.transform) as GameObject;
+                        button.name = $"ToggleStateSender_{c}_{r}";
+                        button.GetComponent<UnityEngine.UI.Button>().interactable = activeCells.Contains((c, r));
+                        var sender = button.GetComponent<ToggleStateSender>();
+                        var so = new SerializedObject(sender);
+                        so.FindProperty("ui").objectReferenceValue = tagMarkerUI;
+                        so.FindProperty("index").intValue = c * MAX_COL + r;
+                        so.ApplyModifiedPropertiesWithoutUndo();
+                    }
+                    Undo.RegisterCreatedObjectUndo(buttonsCol, "Create ToggleStateSenders");
+                }
             }
         }
 

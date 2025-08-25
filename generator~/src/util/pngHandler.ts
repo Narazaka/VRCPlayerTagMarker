@@ -2,7 +2,7 @@ import imageCompression from "browser-image-compression";
 import { decodeSync, encodeSync } from "png-chunk-itxt";
 import encodePng from "png-chunks-encode";
 import extractPng from "png-chunks-extract";
-import { toUnityVisualData, type VisualData } from "./VisualData";
+import { toUnityVisualData, type VisualData, type VisualDataWithNull } from "./VisualData";
 
 const jsKeyword = "vrcTagMarkerData";
 const unityKeyword = "vrcTagMarkerDataUnity";
@@ -132,8 +132,17 @@ export function loadFromBlob(file: Blob): Promise<Uint8Array> {
   });
 }
 
-export async function loadPngDataFromBlob(file: Blob) {
+export async function loadPngDataFromBlob(file: Blob): Promise<VisualData | undefined> {
   const png = await loadFromBlob(file);
-  const data = getDataJson<{ [jsKeyword]: VisualData }>(png, jsKeyword);
-  return data[jsKeyword];
+  const data = getDataJson<{ [jsKeyword]: VisualDataWithNull }>(png, jsKeyword);
+  const visualData = data[jsKeyword];
+  if (!visualData) return;
+  return {
+    ...visualData,
+    colVisuals: visualData.colVisuals.map((v) => v ?? undefined),
+    rowVisuals: visualData.rowVisuals.map((v) => v ?? undefined),
+    cells: visualData.cells.map((row) =>
+      row.map((c) => c ?? undefined)
+    ),
+  };
 }

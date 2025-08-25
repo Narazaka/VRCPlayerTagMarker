@@ -9,9 +9,15 @@ export interface VisualData {
   cellHeight: number;
   spacing: number;
   baseVisual: VisualProps;
-  colVisuals: PartialVisualProps[];
-  rowVisuals: PartialVisualProps[];
-  cells: CellProps[][];
+  colVisuals: (PartialVisualProps | undefined)[];
+  rowVisuals: (PartialVisualProps | undefined)[];
+  cells: (CellProps | undefined)[][];
+}
+
+export interface VisualDataWithNull extends Omit<VisualData, "colVisuals" | "rowVisuals" | "cells"> {
+  colVisuals: (PartialVisualProps | undefined | null)[];
+  rowVisuals: (PartialVisualProps | undefined | null)[];
+  cells: (CellProps | undefined | null)[][];
 }
 
 type NullableKeys<T> = {
@@ -84,10 +90,10 @@ export function toUnityPartialVisualProps(
 export function toUnityCellProps(
   col: number,
   row: number,
-  props: CellProps,
+  props: CellProps | undefined,
 ): UnityCellProps {
   return {
-    text: props.text,
+    text: props?.text ?? "",
     col,
     row,
     ...toUnityPartialVisualProps(props),
