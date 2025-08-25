@@ -620,7 +620,8 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     #endif
 
                     float2 uv = i.uv + float2(currentCol - currentSlotCol, (currentSlotRow - currentRow)) / float2(_TagDataColCount, _TagDataRowCount);
-                    fixed4 color = tex2D(_MainTex, uv);
+                    // mipmap有効にすると境界付近に変な線が出るので暫定対処
+                    fixed4 color = tex2Dlod(_MainTex, float4(uv, 0, 0));
 
                     if (color.a < _Cutout || mainAxisSlot < 0 || subAxisSlot < 0 || mainAxisSlot >= mainAxisActiveSlotCount || subAxisSlot >= activeSlotCountBySubAxis[mainAxisSlot]) {
                         discard;
