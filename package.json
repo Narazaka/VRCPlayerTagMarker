@@ -1,6 +1,6 @@
 {
   "name": "net.narazaka.vrchat.tag-marker",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "displayName": "VRC Player Tag Marker",
   "description": "プレイヤーごとに頭上にタグを表示するワールド用アセット",
   "author": {

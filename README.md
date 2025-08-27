@@ -25,6 +25,7 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.3.2: デフォルト位置調整
 - 0.3.1:
   - mipmap有効にすると境界付近に変な線が出る問題への暫定対処
 - 0.3.0:
