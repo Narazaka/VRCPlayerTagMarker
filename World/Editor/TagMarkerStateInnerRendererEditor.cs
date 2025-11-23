@@ -23,9 +23,9 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
         bool IsValid()
         {
             var component = target as TagMarkerStateInnerRenderer;
-            var playerObject = component.GetComponentInParent<VRCPlayerObject>();
+            var playerObject = component.GetComponentInParent<VRCPlayerObject>(true);
             if (playerObject == null) return false;
-            return playerObject.GetComponentInChildren<TagMarkerPlayerState>() != null;
+            return playerObject.GetComponentInChildren<TagMarkerPlayerState>(true) != null;
         }
     }
 }
