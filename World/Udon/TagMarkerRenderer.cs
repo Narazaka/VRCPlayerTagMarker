@@ -9,21 +9,26 @@ namespace Narazaka.VRChat.TagMarker.World
 
         int[] tagPropertyIds = new int[TagMarkerConstants.MaxCol * TagMarkerConstants.MaxRow];
 
-        protected void UpdateRenderer(bool[] toggleStates)
+        protected void UpdateRenderer(TagMarkerPlayerState playerState)
         {
-            var len = toggleStates.Length;
+            var mapLength = playerState._GetMapLength();
+            var toggleStates = playerState._GetToggleStatesForRenderer();
             var materialPropertyBlock = new MaterialPropertyBlock();
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < mapLength; i++)
             {
-                materialPropertyBlock.SetFloat(TagPropertyId(i), toggleStates[i] ? 1f : 0f);
+                var col = playerState._GetCol(i);
+                var row = playerState._GetRow(i);
+                var propId = TagPropertyId(col, row);
+                materialPropertyBlock.SetFloat(propId, toggleStates[i] ? 1f : 0f);
             }
             _renderer.SetPropertyBlock(materialPropertyBlock);
         }
 
-        int TagPropertyId(int index)
+        int TagPropertyId(int col, int row)
         {
+            var index = col * TagMarkerConstants.MaxRow + row;
             if (tagPropertyIds[index] != 0) return tagPropertyIds[index];
-            return tagPropertyIds[index] = TagMarkerConstants.TagPropertyId(index);
+            return tagPropertyIds[index] = TagMarkerConstants.TagPropertyId(col, row);
         }
     }
 }

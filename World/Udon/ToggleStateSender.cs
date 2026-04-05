@@ -1,4 +1,4 @@
-﻿using UdonSharp;
+using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
@@ -9,11 +9,11 @@ namespace Narazaka.VRChat.TagMarker.World
     public class ToggleStateSender : UdonSharpBehaviour
     {
         [SerializeField] TagMarkerUI ui;
-        [SerializeField] int index;
+        [SerializeField] ushort cellId;
 
         public void Send()
         {
-            ui.ToggleState(index);
+            ui.ToggleState(cellId);
         }
     }
 }

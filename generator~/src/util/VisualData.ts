@@ -2,7 +2,7 @@ import type { CellProps } from "./CellProps";
 import type { PartialVisualProps, VisualProps } from "./VisualProps";
 
 export interface VisualData {
-  version: 1;
+  version: 1 | 2;
   col: number;
   row: number;
   cellWidth: number;
@@ -12,13 +12,19 @@ export interface VisualData {
   colVisuals: (PartialVisualProps | undefined)[];
   rowVisuals: (PartialVisualProps | undefined)[];
   cells: (CellProps | undefined)[][];
+  maxCellId?: number;
 }
 
 export interface VisualDataWithNull
-  extends Omit<VisualData, "colVisuals" | "rowVisuals" | "cells"> {
+  extends Omit<
+    VisualData,
+    "colVisuals" | "rowVisuals" | "cells" | "maxCellId"
+  > {
+  version: 1 | 2;
   colVisuals: (PartialVisualProps | undefined | null)[];
   rowVisuals: (PartialVisualProps | undefined | null)[];
   cells: (CellProps | undefined | null)[][];
+  maxCellId?: number | null;
 }
 
 type NullableKeys<T> = {
@@ -36,14 +42,16 @@ type UnityNullableData<T> = NullableFields<
 > &
   Required<T>;
 
-export interface UnityCellProps extends UnityNullableData<CellProps> {
+export interface UnityCellProps
+  extends UnityNullableData<Omit<CellProps, "cellId">> {
   col: number;
   row: number;
+  cellId: number;
 }
 export type UnityPartialVisualProps = UnityNullableData<PartialVisualProps>;
 
 export interface UnityVisualData {
-  version: 1;
+  version: 2;
   col: number;
   row: number;
   cellWidth: number;
@@ -53,6 +61,7 @@ export interface UnityVisualData {
   colVisuals: UnityPartialVisualProps[];
   rowVisuals: UnityPartialVisualProps[];
   cells: UnityCellProps[];
+  maxCellId: number;
 }
 
 export function toUnityPartialVisualProps(
@@ -97,13 +106,14 @@ export function toUnityCellProps(
     text: props?.text ?? "",
     col,
     row,
+    cellId: props?.cellId ?? 0,
     ...toUnityPartialVisualProps(props),
   };
 }
 
 export function toUnityVisualData(data: VisualData): UnityVisualData {
   return {
-    version: 1,
+    version: 2,
     col: data.col,
     row: data.row,
     cellWidth: data.cellWidth,
@@ -115,6 +125,7 @@ export function toUnityVisualData(data: VisualData): UnityVisualData {
     cells: data.cells.flatMap((col, rowIndex) =>
       col.map((cell, colIndex) => toUnityCellProps(colIndex, rowIndex, cell)),
     ),
+    maxCellId: data.maxCellId ?? 0,
   };
 }
 export function fromUnityPartialVisualProps(
@@ -142,6 +153,7 @@ export function fromUnityPartialVisualProps(
 export function fromUnityCellProps(props: UnityCellProps): CellProps {
   return {
     text: props.text,
+    cellId: props.cellId,
     ...fromUnityPartialVisualProps(props),
   };
 }
@@ -169,5 +181,6 @@ export function fromUnityVisualData(data: UnityVisualData): VisualData {
     colVisuals: data.colVisuals.map(fromUnityPartialVisualProps),
     rowVisuals: data.rowVisuals.map(fromUnityPartialVisualProps),
     cells: fromUnityCellPropsArray(data.cells),
+    maxCellId: data.maxCellId,
   };
 }

@@ -1,4 +1,4 @@
-﻿using UdonSharp;
+using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
@@ -22,10 +22,10 @@ namespace Narazaka.VRChat.TagMarker.World
             }
         }
 
-        public void ToggleState(int index)
+        public void ToggleState(ushort cellId)
         {
             if (tagMarkerPlayerState == null) return;
-            tagMarkerPlayerState._ToggleState(index);
+            tagMarkerPlayerState._ToggleState(cellId);
         }
     }
 }

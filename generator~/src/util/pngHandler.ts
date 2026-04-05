@@ -2,6 +2,7 @@ import imageCompression from "browser-image-compression";
 import { decodeSync, encodeSync } from "png-chunk-itxt";
 import encodePng from "png-chunks-encode";
 import extractPng from "png-chunks-extract";
+import type { CellProps } from "./CellProps";
 import {
   toUnityVisualData,
   type VisualData,
@@ -143,10 +144,25 @@ export async function loadPngDataFromBlob(
   const data = getDataJson<{ [jsKeyword]: VisualDataWithNull }>(png, jsKeyword);
   const visualData = data[jsKeyword];
   if (!visualData) return;
+  const needsCellIdMigration = visualData.version < 2;
+  let maxCellId = visualData.maxCellId ?? 0;
+  const cells = visualData.cells.map((row, rowIndex) =>
+    row.map((c, colIndex) => {
+      if (c == null) return undefined;
+      const cell: CellProps = { ...c };
+      if ((needsCellIdMigration || cell.cellId == null) && cell.text) {
+        maxCellId++;
+        cell.cellId = maxCellId;
+      }
+      return cell;
+    }),
+  );
   return {
     ...visualData,
+    version: 2,
     colVisuals: visualData.colVisuals.map((v) => v ?? undefined),
     rowVisuals: visualData.rowVisuals.map((v) => v ?? undefined),
-    cells: visualData.cells.map((row) => row.map((c) => c ?? undefined)),
+    cells,
+    maxCellId,
   };
 }

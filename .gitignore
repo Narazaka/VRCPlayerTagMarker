@@ -1,1 +1,3 @@
 node_modules
+generator~/test-results/
+generator~/playwright-report/

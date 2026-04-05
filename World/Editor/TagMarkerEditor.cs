@@ -6,6 +6,8 @@ using System.IO;
 using Narazaka.VRChat.TagMarker.Editor;
 using System.Linq;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Narazaka.VRChat.TagMarker.Tests.Editor")]
+
 namespace Narazaka.VRChat.TagMarker.World.Editor
 {
     [CustomEditor(typeof(Runtime.TagMarker))]
@@ -66,6 +68,11 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                 if (data == null)
                 {
                     EditorGUILayout.HelpBox("PNGにタグデータが含まれていません", MessageType.Error);
+                }
+                else if (data.version < 2)
+                {
+                    EditorGUILayout.HelpBox("このPNGは旧形式です。「タグを編集する」ボタンからWebサイトを開き、PNGを読み込んで再度ダウンロードしてください。", MessageType.Error);
+                    data = null;
                 }
                 else
                 {
@@ -179,8 +186,33 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             onUI.SetKeyword(new UnityEngine.Rendering.LocalKeyword(shader, "_DISPLAY_ALIGN_COL"), false);
             EditorUtility.SetDirty(onUI);
 
+            // Build mapping tables from PNG data
+            BuildMappingTables(data.cells, out var mapCellIds, out var mapColPositions, out var mapRowPositions);
+
             var size = data.size;
             var tagMarker = target as Runtime.TagMarker;
+
+            // Inject mapping tables into TagMarkerPlayerState
+            var tagMarkerPlayerStateSo = new SerializedObject(tagMarker.tagMarkerPlayerState);
+            tagMarkerPlayerStateSo.FindProperty("mapCellIds").ClearArray();
+            for (var i = 0; i < mapCellIds.Length; i++)
+            {
+                tagMarkerPlayerStateSo.FindProperty("mapCellIds").InsertArrayElementAtIndex(i);
+                tagMarkerPlayerStateSo.FindProperty("mapCellIds").GetArrayElementAtIndex(i).intValue = mapCellIds[i];
+            }
+            tagMarkerPlayerStateSo.FindProperty("mapColPositions").ClearArray();
+            for (var i = 0; i < mapColPositions.Length; i++)
+            {
+                tagMarkerPlayerStateSo.FindProperty("mapColPositions").InsertArrayElementAtIndex(i);
+                tagMarkerPlayerStateSo.FindProperty("mapColPositions").GetArrayElementAtIndex(i).intValue = mapColPositions[i];
+            }
+            tagMarkerPlayerStateSo.FindProperty("mapRowPositions").ClearArray();
+            for (var i = 0; i < mapRowPositions.Length; i++)
+            {
+                tagMarkerPlayerStateSo.FindProperty("mapRowPositions").InsertArrayElementAtIndex(i);
+                tagMarkerPlayerStateSo.FindProperty("mapRowPositions").GetArrayElementAtIndex(i).intValue = mapRowPositions[i];
+            }
+            tagMarkerPlayerStateSo.ApplyModifiedProperties();
 
             var tagMarkerUIs = tagMarker.GetComponentsInChildren<TagMarkerUI>(true);
             var tagMarkerRenders = tagMarker.GetComponentsInChildren<TagMarkerRenderer>(true).Where(c => !tagMarkerUIs.Contains(c)).ToArray();
@@ -236,7 +268,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                     Undo.DestroyObjectImmediate(item);
                 }
 
-                var activeCells = data.cells.Where(c => !string.IsNullOrEmpty(c.text)).Select(c => (c.col, c.row)).ToHashSet();
+                var activeCellSet = data.cells.Where(c => !string.IsNullOrEmpty(c.text)).ToDictionary(c => (c.col, c.row), c => c.cellId);
                 for (var c = 0; c < data.col; c++)
                 {
                     var buttonsCol = PrefabUtility.InstantiatePrefab(tagMarker.ToggleStateSendersColumn, tagButtonsContainer) as GameObject;
@@ -244,16 +276,29 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                     {
                         var button = PrefabUtility.InstantiatePrefab(tagMarker.ToggleStateSender, buttonsCol.transform) as GameObject;
                         button.name = $"ToggleStateSender_{c}_{r}";
-                        button.GetComponent<UnityEngine.UI.Button>().interactable = activeCells.Contains((c, r));
+                        var hasCell = activeCellSet.TryGetValue((c, r), out var btnCellId);
+                        button.GetComponent<UnityEngine.UI.Button>().interactable = hasCell;
                         var sender = button.GetComponent<ToggleStateSender>();
                         var so = new SerializedObject(sender);
                         so.FindProperty("ui").objectReferenceValue = tagMarkerUI;
-                        so.FindProperty("index").intValue = c * MAX_COL + r;
+                        so.FindProperty("cellId").intValue = hasCell ? btnCellId : 0;
                         so.ApplyModifiedPropertiesWithoutUndo();
                     }
                     Undo.RegisterCreatedObjectUndo(buttonsCol, "Create ToggleStateSenders");
                 }
             }
+        }
+
+        internal static void BuildMappingTables(
+            VisualData.CellProp[] cells,
+            out ushort[] mapCellIds,
+            out byte[] mapColPositions,
+            out byte[] mapRowPositions)
+        {
+            var activeCells = cells.Where(c => !string.IsNullOrEmpty(c.text)).ToArray();
+            mapCellIds = activeCells.Select(c => c.cellId).ToArray();
+            mapColPositions = activeCells.Select(c => (byte)c.col).ToArray();
+            mapRowPositions = activeCells.Select(c => (byte)c.row).ToArray();
         }
 
         static Shader _shader = null;

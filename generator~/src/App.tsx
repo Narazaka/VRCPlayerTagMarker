@@ -1,4 +1,12 @@
 import {
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  pointerWithin,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
   Alert,
   Button,
   Container,
@@ -12,9 +20,26 @@ import {
 } from "@mantine/core";
 import { Dropzone } from "@mantine/dropzone";
 import { useLocalStorage } from "@mantine/hooks";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import CellPropsView from "./CellPropsView";
+import DroppableCell from "./DroppableCell";
+import RowActions from "./RowActions";
 import type { CellProps } from "./util/CellProps";
+import { assignCellIds as assignCellIdsImpl } from "./util/cellIdAssigner";
+import {
+  deleteRowCells,
+  deleteRowVisuals,
+  insertRowCells,
+  insertRowVisuals,
+  swapCells as swapCellsImpl,
+} from "./util/cellOperations";
 import { draw } from "./util/draw";
 import { useFonts } from "./util/fonts";
 import {
@@ -113,6 +138,7 @@ function App() {
       ),
     [col, row, colVisuals, rowVisuals, withBaseVisual],
   );
+  const [maxCellId, setMaxCellId] = useState(0);
   const [cells, setCells] = useState<(CellProps | undefined)[][]>([]);
   const setCell = useMemo(
     () =>
@@ -136,6 +162,60 @@ function App() {
       ),
     [col, row],
   );
+  const assignCellIds = useCallback(
+    (cells: (CellProps | undefined)[][]) => assignCellIdsImpl(cells, maxCellId),
+    [maxCellId],
+  );
+  const swapCells = useCallback(
+    (fromRow: number, fromCol: number, toRow: number, toCol: number) => {
+      setCells((prev) => swapCellsImpl(prev, fromRow, fromCol, toRow, toCol));
+    },
+    [],
+  );
+
+  const insertRow = useCallback(
+    (afterRowIndex: number) => {
+      setRow((prev) => prev + 1);
+      setCells((prev) => insertRowCells(prev, afterRowIndex, col));
+      setRowVisuals((prev) => insertRowVisuals(prev, afterRowIndex));
+    },
+    [col],
+  );
+
+  const deleteRow = useCallback(
+    (rowIndex: number) => {
+      if (row <= 1) return;
+      if (!window.confirm(`行 ${rowIndex + 1} を削除しますか？`)) return;
+      setRow((prev) => prev - 1);
+      setCells((prev) => deleteRowCells(prev, rowIndex));
+      setRowVisuals((prev) => deleteRowVisuals(prev, rowIndex));
+    },
+    [row],
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+  );
+
+  const handleDragStart = useCallback(() => {
+    document.body.style.cursor = "grabbing";
+  }, []);
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      document.body.style.cursor = "";
+      const { over } = event;
+      if (!over) return;
+      const from = event.active.data.current as { row: number; col: number };
+      const to = over.data.current as { row: number; col: number };
+      if (from.row === to.row && from.col === to.col) return;
+      swapCells(from.row, from.col, to.row, to.col);
+    },
+    [swapCells],
+  );
+
   const targetRef = useRef<HTMLCanvasElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -157,6 +237,7 @@ function App() {
           setColVisuals(data.colVisuals || []);
           setRowVisuals(data.rowVisuals || []);
           setCells(data.cells || []);
+          setMaxCellId(data.maxCellId ?? 0);
         }
       });
     }
@@ -164,8 +245,12 @@ function App() {
   const handleDownload = async () => {
     const target = targetRef.current;
     if (!target) return;
+    const { cells: cellsWithIds, maxCellId: newMaxCellId } =
+      assignCellIds(cells);
+    setMaxCellId(newMaxCellId);
+    setCells(cellsWithIds);
     const blob = await canvasToPngWithDataBlob(target, {
-      version: 1,
+      version: 2,
       col,
       row,
       cellWidth,
@@ -174,7 +259,8 @@ function App() {
       baseVisual,
       colVisuals,
       rowVisuals,
-      cells,
+      cells: cellsWithIds,
+      maxCellId: newMaxCellId,
     });
     if (!blob) return;
     saveBlobToFile(blob, `${fileName}.vrc-tag-marker.png`);
@@ -329,67 +415,85 @@ function App() {
             </Button>
           </Grid.Col>
         </Grid>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            ...cellStyle,
-          }}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={pointerWithin}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
         >
-          <tbody>
-            <tr>
-              <th style={cellStyle}>
-                <VisualPropsView
-                  props={baseVisual}
-                  setProps={setBaseVisual}
-                  fonts={fonts}
-                  required
-                />
-              </th>
-              {Array.from({ length: col }, (_, colIndex) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: no id
-                <th key={colIndex} style={cellStyle}>
-                  <VisualPropsView
-                    props={colVisuals[colIndex]}
-                    setProps={setColVisual[colIndex]}
-                    withParentVisualProps={withBaseVisual}
-                    fonts={fonts}
-                  />
-                </th>
-              ))}
-            </tr>
-            {Array.from({ length: row }, (_, rowIndex) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: no id
-              <tr key={rowIndex}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              ...cellStyle,
+            }}
+          >
+            <tbody>
+              <tr>
                 <th style={cellStyle}>
                   <VisualPropsView
-                    props={rowVisuals[rowIndex]}
-                    setProps={setRowVisual[rowIndex]}
-                    withParentVisualProps={withBaseVisual}
+                    props={baseVisual}
+                    setProps={setBaseVisual}
                     fonts={fonts}
+                    required
                   />
                 </th>
-                {Array.from({ length: col }, (_, colIndex) => {
-                  const cell = cells[rowIndex]?.[colIndex];
-
-                  return (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: no id
-                    <td key={colIndex} style={cellStyle}>
-                      <CellPropsView
-                        props={cell}
-                        setProps={setCell[rowIndex][colIndex]}
-                        withParentVisualProps={
-                          withRowColVisuals[rowIndex][colIndex]
-                        }
-                        fonts={fonts}
-                      />
-                    </td>
-                  );
-                })}
+                {Array.from({ length: col }, (_, colIndex) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: no id
+                  <th key={colIndex} style={cellStyle}>
+                    <VisualPropsView
+                      props={colVisuals[colIndex]}
+                      setProps={setColVisual[colIndex]}
+                      withParentVisualProps={withBaseVisual}
+                      fonts={fonts}
+                    />
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+              {Array.from({ length: row }, (_, rowIndex) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: no id
+                <tr key={rowIndex}>
+                  <th style={cellStyle}>
+                    <VisualPropsView
+                      props={rowVisuals[rowIndex]}
+                      setProps={setRowVisual[rowIndex]}
+                      withParentVisualProps={withBaseVisual}
+                      fonts={fonts}
+                    />
+                    <RowActions
+                      onInsertRow={() => insertRow(rowIndex)}
+                      onDeleteRow={() => deleteRow(rowIndex)}
+                    />
+                  </th>
+                  {Array.from({ length: col }, (_, colIndex) => {
+                    const cell = cells[rowIndex]?.[colIndex];
+
+                    return (
+                      <DroppableCell
+                        // biome-ignore lint/suspicious/noArrayIndexKey: no id
+                        key={colIndex}
+                        row={rowIndex}
+                        col={colIndex}
+                        style={cellStyle}
+                      >
+                        <CellPropsView
+                          props={cell}
+                          setProps={setCell[rowIndex][colIndex]}
+                          withParentVisualProps={
+                            withRowColVisuals[rowIndex][colIndex]
+                          }
+                          fonts={fonts}
+                          row={rowIndex}
+                          col={colIndex}
+                        />
+                      </DroppableCell>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </DndContext>
       </Stack>
       <div
         style={{

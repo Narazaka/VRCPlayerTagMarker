@@ -1,0 +1,35 @@
+{
+    "name": "Narazaka.VRChat.TagMarker.Tests.Udon",
+    "rootNamespace": "",
+    "references": [
+        "VRC.SDKBase",
+        "VRC.Udon",
+        "VRC.Udon.Serialization.OdinSerializer",
+        "UdonSharp.Runtime",
+        "Narazaka.VRChat.TagMarker.World",
+        "Koyashiro.UdonTest"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UDON_TEST_AVAILABLE",
+        "HAS_WORLD_SDK"
+    ],
+    "versionDefines": [
+        {
+            "name": "net.koyashiro.udontest",
+            "expression": "",
+            "define": "UDON_TEST_AVAILABLE"
+        },
+        {
+            "name": "com.vrchat.worlds",
+            "expression": "3",
+            "define": "HAS_WORLD_SDK"
+        }
+    ],
+    "noEngineReferences": false
+}

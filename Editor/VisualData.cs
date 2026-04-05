@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 [assembly: InternalsVisibleTo("Narazaka.VRChat.TagMarker.World.Editor")]
+[assembly: InternalsVisibleTo("Narazaka.VRChat.TagMarker.Tests.Editor")]
 
 namespace Narazaka.VRChat.TagMarker.Editor
 {
@@ -264,6 +265,7 @@ namespace Narazaka.VRChat.TagMarker.Editor
             public int col;
             public int row;
             public string text;
+            public ushort cellId;
 
             [CustomPropertyDrawer(typeof(CellProp))]
             public class CellPropDrawer : PartialVisualPropsDrawer
@@ -272,7 +274,8 @@ namespace Narazaka.VRChat.TagMarker.Editor
                 {
                     nameof(CellProp.col),
                     nameof(CellProp.row),
-                    nameof(CellProp.text)
+                    nameof(CellProp.text),
+                    nameof(CellProp.cellId)
                 };
                 protected override Rect DrawCustomProperty(Rect position, SerializedProperty property, GUIContent label)
                 {
