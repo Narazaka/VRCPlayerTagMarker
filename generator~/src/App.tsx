@@ -32,6 +32,7 @@ import CellPropsView from "./CellPropsView";
 import DroppableCell from "./DroppableCell";
 import RowActions from "./RowActions";
 import type { CellProps } from "./util/CellProps";
+import { assignCellIds as assignCellIdsImpl } from "./util/cellIdAssigner";
 import { draw } from "./util/draw";
 import { useFonts } from "./util/fonts";
 import {
@@ -155,20 +156,7 @@ function App() {
     [col, row],
   );
   const assignCellIds = useCallback(
-    (
-      cells: (CellProps | undefined)[][],
-    ): { cells: (CellProps | undefined)[][]; maxCellId: number } => {
-      let nextId = maxCellId;
-      const newCells = cells.map((row) =>
-        row.map((cell) => {
-          if (!cell?.text) return cell;
-          if (cell.cellId != null) return cell;
-          nextId++;
-          return { ...cell, cellId: nextId };
-        }),
-      );
-      return { cells: newCells, maxCellId: nextId };
-    },
+    (cells: (CellProps | undefined)[][]) => assignCellIdsImpl(cells, maxCellId),
     [maxCellId],
   );
   const swapCells = useCallback(
