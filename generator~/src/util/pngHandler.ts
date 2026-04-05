@@ -146,8 +146,8 @@ export async function loadPngDataFromBlob(
   if (!visualData) return;
   const needsCellIdMigration = visualData.version < 2;
   let maxCellId = visualData.maxCellId ?? 0;
-  const cells = visualData.cells.map((row, rowIndex) =>
-    row.map((c, colIndex) => {
+  const cells = visualData.cells.map((row) =>
+    row.map((c) => {
       if (c == null) return undefined;
       const cell: CellProps = { ...c };
       if ((needsCellIdMigration || cell.cellId == null) && cell.text) {
