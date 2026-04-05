@@ -1,0 +1,23 @@
+{
+    "name": "Narazaka.VRChat.TagMarker.Tests.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Narazaka.VRChat.TagMarker.Editor",
+        "Narazaka.VRChat.TagMarker.World.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

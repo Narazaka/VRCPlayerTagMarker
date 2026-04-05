@@ -6,6 +6,8 @@ using System.IO;
 using Narazaka.VRChat.TagMarker.Editor;
 using System.Linq;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Narazaka.VRChat.TagMarker.Tests.Editor")]
+
 namespace Narazaka.VRChat.TagMarker.World.Editor
 {
     [CustomEditor(typeof(Runtime.TagMarker))]
@@ -185,10 +187,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             EditorUtility.SetDirty(onUI);
 
             // Build mapping tables from PNG data
-            var activeCells = data.cells.Where(c => !string.IsNullOrEmpty(c.text)).ToArray();
-            var mapCellIds = activeCells.Select(c => c.cellId).ToArray();
-            var mapColPositions = activeCells.Select(c => (byte)c.col).ToArray();
-            var mapRowPositions = activeCells.Select(c => (byte)c.row).ToArray();
+            BuildMappingTables(data.cells, out var mapCellIds, out var mapColPositions, out var mapRowPositions);
 
             var size = data.size;
             var tagMarker = target as Runtime.TagMarker;
@@ -288,6 +287,18 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                     Undo.RegisterCreatedObjectUndo(buttonsCol, "Create ToggleStateSenders");
                 }
             }
+        }
+
+        internal static void BuildMappingTables(
+            VisualData.CellProp[] cells,
+            out ushort[] mapCellIds,
+            out byte[] mapColPositions,
+            out byte[] mapRowPositions)
+        {
+            var activeCells = cells.Where(c => !string.IsNullOrEmpty(c.text)).ToArray();
+            mapCellIds = activeCells.Select(c => c.cellId).ToArray();
+            mapColPositions = activeCells.Select(c => (byte)c.col).ToArray();
+            mapRowPositions = activeCells.Select(c => (byte)c.row).ToArray();
         }
 
         static Shader _shader = null;
