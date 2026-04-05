@@ -1,4 +1,4 @@
-import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { useDraggable } from "@dnd-kit/core";
 import { Group, TextInput } from "@mantine/core";
 import chroma from "chroma-js";
 import { memo } from "react";
@@ -21,31 +21,17 @@ function CellPropsView({
   row: number;
   col: number;
 }) {
-  const cellDndId = `cell-${row}-${col}`;
-  const {
-    attributes,
-    listeners,
-    setNodeRef: setDragRef,
-    isDragging,
-  } = useDraggable({
-    id: cellDndId,
-    data: { row, col },
-  });
-  const { setNodeRef: setDropRef, isOver } = useDroppable({
-    id: cellDndId,
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `cell-${row}-${col}`,
     data: { row, col },
   });
 
   const propsWithParent = withParentVisualProps(props);
   return (
     <div
-      ref={(node) => {
-        setDragRef(node);
-        setDropRef(node);
-      }}
+      ref={setNodeRef}
       style={{
         opacity: isDragging ? 0.4 : 1,
-        outline: isOver ? "2px solid #228be6" : undefined,
       }}
     >
       <Group>

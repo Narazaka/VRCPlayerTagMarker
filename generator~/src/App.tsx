@@ -2,6 +2,7 @@ import {
   DndContext,
   type DragEndEvent,
   PointerSensor,
+  pointerWithin,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -28,6 +29,7 @@ import {
   useState,
 } from "react";
 import CellPropsView from "./CellPropsView";
+import DroppableCell from "./DroppableCell";
 import RowActions from "./RowActions";
 import type { CellProps } from "./util/CellProps";
 import { draw } from "./util/draw";
@@ -159,7 +161,7 @@ function App() {
       let nextId = maxCellId;
       const newCells = cells.map((row) =>
         row.map((cell) => {
-          if (!cell || !cell.text) return cell;
+          if (!cell?.text) return cell;
           if (cell.cellId != null) return cell;
           nextId++;
           return { ...cell, cellId: nextId };
@@ -444,6 +446,7 @@ function App() {
         </Grid>
         <DndContext
           sensors={sensors}
+          collisionDetection={pointerWithin}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
@@ -495,8 +498,13 @@ function App() {
                     const cell = cells[rowIndex]?.[colIndex];
 
                     return (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: no id
-                      <td key={colIndex} style={cellStyle}>
+                      <DroppableCell
+                        // biome-ignore lint/suspicious/noArrayIndexKey: no id
+                        key={colIndex}
+                        row={rowIndex}
+                        col={colIndex}
+                        style={cellStyle}
+                      >
                         <CellPropsView
                           props={cell}
                           setProps={setCell[rowIndex][colIndex]}
@@ -507,7 +515,7 @@ function App() {
                           row={rowIndex}
                           col={colIndex}
                         />
-                      </td>
+                      </DroppableCell>
                     );
                   })}
                 </tr>
