@@ -67,6 +67,11 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                 {
                     EditorGUILayout.HelpBox("PNGにタグデータが含まれていません", MessageType.Error);
                 }
+                else if (data.version < 2)
+                {
+                    EditorGUILayout.HelpBox("このPNGは旧形式です。「タグを編集する」ボタンからWebサイトを開き、PNGを読み込んで再度ダウンロードしてください。", MessageType.Error);
+                    data = null;
+                }
                 else
                 {
                     EditorGUILayout.HelpBox("タグデータ付きPNGです", MessageType.Info);
