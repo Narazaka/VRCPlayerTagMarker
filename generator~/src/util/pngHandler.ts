@@ -151,8 +151,8 @@ export async function loadPngDataFromBlob(
       if (c == null) return undefined;
       const cell: CellProps = { ...c };
       if ((needsCellIdMigration || cell.cellId == null) && cell.text) {
-        cell.cellId = colIndex * 32 + rowIndex;
-        if (cell.cellId > maxCellId) maxCellId = cell.cellId;
+        maxCellId++;
+        cell.cellId = maxCellId;
       }
       return cell;
     }),

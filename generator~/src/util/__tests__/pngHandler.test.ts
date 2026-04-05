@@ -34,7 +34,7 @@ describe("loadPngDataFromBlob", () => {
     const result = await loadPngDataFromBlob(blob);
     expect(result).toBeDefined();
     expect(result!.version).toBe(2);
-    expect(result!.cells[0][0]?.cellId).toBe(0 * 32 + 0);
+    expect(result!.cells[0][0]?.cellId).toBe(1);
     expect(result!.cells[0][0]?.text).toBe("hello");
   });
 
@@ -74,8 +74,8 @@ describe("loadPngDataFromBlob", () => {
     };
     const blob = createPngBlob(v1Data);
     const result = await loadPngDataFromBlob(blob);
-    // colIndex * 32 + rowIndex: (0,0)=0, (1,0)=32, (0,1)=1
-    expect(result!.maxCellId).toBe(32);
+    // Sequential: a=1, b=2, c=3
+    expect(result!.maxCellId).toBe(3);
   });
 
   it("version 2 データはcellIdがそのまま維持される", async () => {
