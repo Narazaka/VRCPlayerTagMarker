@@ -43,6 +43,13 @@ describe("assignCellIds", () => {
     expect(result.maxCellId).toBe(13);
   });
 
+  it("テキストが空になったセルのcellIdがクリアされる", () => {
+    const cells = [[{ text: "", cellId: 42 }]];
+    const result = assignCellIds(cells, 50);
+    expect(result.cells[0][0]?.cellId).toBeUndefined();
+    expect(result.maxCellId).toBe(50);
+  });
+
   it("既存IDと新規IDが混在する場合", () => {
     const cells = [[{ text: "existing", cellId: 5 }, { text: "new" }]];
     const result = assignCellIds(cells, 5);

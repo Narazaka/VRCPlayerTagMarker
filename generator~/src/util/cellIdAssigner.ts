@@ -7,7 +7,13 @@ export function assignCellIds(
   let nextId = maxCellId;
   const newCells = cells.map((row) =>
     row.map((cell) => {
-      if (!cell?.text) return cell;
+      if (!cell?.text) {
+        if (cell?.cellId != null) {
+          const { cellId: _, ...rest } = cell;
+          return rest as CellProps;
+        }
+        return cell;
+      }
       if (cell.cellId != null) return cell;
       nextId++;
       return { ...cell, cellId: nextId };
