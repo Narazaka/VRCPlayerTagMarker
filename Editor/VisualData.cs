@@ -273,7 +273,8 @@ namespace Narazaka.VRChat.TagMarker.Editor
                 {
                     nameof(CellProp.col),
                     nameof(CellProp.row),
-                    nameof(CellProp.text)
+                    nameof(CellProp.text),
+                    nameof(CellProp.cellId)
                 };
                 protected override Rect DrawCustomProperty(Rect position, SerializedProperty property, GUIContent label)
                 {
