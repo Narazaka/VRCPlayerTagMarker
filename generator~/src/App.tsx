@@ -33,6 +33,13 @@ import DroppableCell from "./DroppableCell";
 import RowActions from "./RowActions";
 import type { CellProps } from "./util/CellProps";
 import { assignCellIds as assignCellIdsImpl } from "./util/cellIdAssigner";
+import {
+  deleteRowCells,
+  deleteRowVisuals,
+  insertRowCells,
+  insertRowVisuals,
+  swapCells as swapCellsImpl,
+} from "./util/cellOperations";
 import { draw } from "./util/draw";
 import { useFonts } from "./util/fonts";
 import {
@@ -161,15 +168,7 @@ function App() {
   );
   const swapCells = useCallback(
     (fromRow: number, fromCol: number, toRow: number, toCol: number) => {
-      setCells((prev) => {
-        const newCells = prev.map((row) => (row ? [...row] : []));
-        if (!newCells[fromRow]) newCells[fromRow] = [];
-        if (!newCells[toRow]) newCells[toRow] = [];
-        const temp = newCells[fromRow][fromCol];
-        newCells[fromRow][fromCol] = newCells[toRow][toCol];
-        newCells[toRow][toCol] = temp;
-        return newCells;
-      });
+      setCells((prev) => swapCellsImpl(prev, fromRow, fromCol, toRow, toCol));
     },
     [],
   );
@@ -177,16 +176,8 @@ function App() {
   const insertRow = useCallback(
     (afterRowIndex: number) => {
       setRow((prev) => prev + 1);
-      setCells((prev) => {
-        const newCells = [...prev];
-        newCells.splice(afterRowIndex + 1, 0, Array.from({ length: col }));
-        return newCells;
-      });
-      setRowVisuals((prev) => {
-        const newVisuals = [...prev];
-        newVisuals.splice(afterRowIndex + 1, 0, undefined);
-        return newVisuals;
-      });
+      setCells((prev) => insertRowCells(prev, afterRowIndex, col));
+      setRowVisuals((prev) => insertRowVisuals(prev, afterRowIndex));
     },
     [col],
   );
@@ -196,16 +187,8 @@ function App() {
       if (row <= 1) return;
       if (!window.confirm(`行 ${rowIndex + 1} を削除しますか？`)) return;
       setRow((prev) => prev - 1);
-      setCells((prev) => {
-        const newCells = [...prev];
-        newCells.splice(rowIndex, 1);
-        return newCells;
-      });
-      setRowVisuals((prev) => {
-        const newVisuals = [...prev];
-        newVisuals.splice(rowIndex, 1);
-        return newVisuals;
-      });
+      setCells((prev) => deleteRowCells(prev, rowIndex));
+      setRowVisuals((prev) => deleteRowVisuals(prev, rowIndex));
     },
     [row],
   );
