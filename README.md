@@ -25,6 +25,7 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.4.0-beta.0: タグの移動に対応（png形式が変わるので一回pngをWebにインポートして再ダウンロードが必要です）
 - 0.3.3: エディタのvalid判定不具合修正
 - 0.3.2: デフォルト位置調整
 - 0.3.1:
