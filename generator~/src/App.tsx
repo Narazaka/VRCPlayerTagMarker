@@ -1,4 +1,11 @@
 import {
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
   Alert,
   Button,
   Container,
@@ -161,6 +168,39 @@ function App() {
     },
     [maxCellId],
   );
+  const swapCells = useCallback(
+    (fromRow: number, fromCol: number, toRow: number, toCol: number) => {
+      setCells((prev) => {
+        const newCells = prev.map((row) => (row ? [...row] : []));
+        if (!newCells[fromRow]) newCells[fromRow] = [];
+        if (!newCells[toRow]) newCells[toRow] = [];
+        const temp = newCells[fromRow][fromCol];
+        newCells[fromRow][fromCol] = newCells[toRow][toCol];
+        newCells[toRow][toCol] = temp;
+        return newCells;
+      });
+    },
+    [],
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { over } = event;
+      if (!over) return;
+      const from = event.active.data.current as { row: number; col: number };
+      const to = over.data.current as { row: number; col: number };
+      if (from.row === to.row && from.col === to.col) return;
+      swapCells(from.row, from.col, to.row, to.col);
+    },
+    [swapCells],
+  );
+
   const targetRef = useRef<HTMLCanvasElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -360,67 +400,71 @@ function App() {
             </Button>
           </Grid.Col>
         </Grid>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            ...cellStyle,
-          }}
-        >
-          <tbody>
-            <tr>
-              <th style={cellStyle}>
-                <VisualPropsView
-                  props={baseVisual}
-                  setProps={setBaseVisual}
-                  fonts={fonts}
-                  required
-                />
-              </th>
-              {Array.from({ length: col }, (_, colIndex) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: no id
-                <th key={colIndex} style={cellStyle}>
-                  <VisualPropsView
-                    props={colVisuals[colIndex]}
-                    setProps={setColVisual[colIndex]}
-                    withParentVisualProps={withBaseVisual}
-                    fonts={fonts}
-                  />
-                </th>
-              ))}
-            </tr>
-            {Array.from({ length: row }, (_, rowIndex) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: no id
-              <tr key={rowIndex}>
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              ...cellStyle,
+            }}
+          >
+            <tbody>
+              <tr>
                 <th style={cellStyle}>
                   <VisualPropsView
-                    props={rowVisuals[rowIndex]}
-                    setProps={setRowVisual[rowIndex]}
-                    withParentVisualProps={withBaseVisual}
+                    props={baseVisual}
+                    setProps={setBaseVisual}
                     fonts={fonts}
+                    required
                   />
                 </th>
-                {Array.from({ length: col }, (_, colIndex) => {
-                  const cell = cells[rowIndex]?.[colIndex];
-
-                  return (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: no id
-                    <td key={colIndex} style={cellStyle}>
-                      <CellPropsView
-                        props={cell}
-                        setProps={setCell[rowIndex][colIndex]}
-                        withParentVisualProps={
-                          withRowColVisuals[rowIndex][colIndex]
-                        }
-                        fonts={fonts}
-                      />
-                    </td>
-                  );
-                })}
+                {Array.from({ length: col }, (_, colIndex) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: no id
+                  <th key={colIndex} style={cellStyle}>
+                    <VisualPropsView
+                      props={colVisuals[colIndex]}
+                      setProps={setColVisual[colIndex]}
+                      withParentVisualProps={withBaseVisual}
+                      fonts={fonts}
+                    />
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+              {Array.from({ length: row }, (_, rowIndex) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: no id
+                <tr key={rowIndex}>
+                  <th style={cellStyle}>
+                    <VisualPropsView
+                      props={rowVisuals[rowIndex]}
+                      setProps={setRowVisual[rowIndex]}
+                      withParentVisualProps={withBaseVisual}
+                      fonts={fonts}
+                    />
+                  </th>
+                  {Array.from({ length: col }, (_, colIndex) => {
+                    const cell = cells[rowIndex]?.[colIndex];
+
+                    return (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: no id
+                      <td key={colIndex} style={cellStyle}>
+                        <CellPropsView
+                          props={cell}
+                          setProps={setCell[rowIndex][colIndex]}
+                          withParentVisualProps={
+                            withRowColVisuals[rowIndex][colIndex]
+                          }
+                          fonts={fonts}
+                          row={rowIndex}
+                          col={colIndex}
+                        />
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </DndContext>
       </Stack>
       <div
         style={{
