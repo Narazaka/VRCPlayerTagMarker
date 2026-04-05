@@ -12,7 +12,14 @@ import {
 } from "@mantine/core";
 import { Dropzone } from "@mantine/dropzone";
 import { useLocalStorage } from "@mantine/hooks";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import CellPropsView from "./CellPropsView";
 import type { CellProps } from "./util/CellProps";
 import { draw } from "./util/draw";
@@ -113,6 +120,7 @@ function App() {
       ),
     [col, row, colVisuals, rowVisuals, withBaseVisual],
   );
+  const [maxCellId, setMaxCellId] = useState(0);
   const [cells, setCells] = useState<(CellProps | undefined)[][]>([]);
   const setCell = useMemo(
     () =>
@@ -136,6 +144,23 @@ function App() {
       ),
     [col, row],
   );
+  const assignCellIds = useCallback(
+    (
+      cells: (CellProps | undefined)[][],
+    ): { cells: (CellProps | undefined)[][]; maxCellId: number } => {
+      let nextId = maxCellId;
+      const newCells = cells.map((row) =>
+        row.map((cell) => {
+          if (!cell || !cell.text) return cell;
+          if (cell.cellId != null) return cell;
+          nextId++;
+          return { ...cell, cellId: nextId };
+        }),
+      );
+      return { cells: newCells, maxCellId: nextId };
+    },
+    [maxCellId],
+  );
   const targetRef = useRef<HTMLCanvasElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -157,6 +182,7 @@ function App() {
           setColVisuals(data.colVisuals || []);
           setRowVisuals(data.rowVisuals || []);
           setCells(data.cells || []);
+          setMaxCellId(data.maxCellId ?? 0);
         }
       });
     }
@@ -164,8 +190,12 @@ function App() {
   const handleDownload = async () => {
     const target = targetRef.current;
     if (!target) return;
+    const { cells: cellsWithIds, maxCellId: newMaxCellId } =
+      assignCellIds(cells);
+    setMaxCellId(newMaxCellId);
+    setCells(cellsWithIds);
     const blob = await canvasToPngWithDataBlob(target, {
-      version: 1,
+      version: 2,
       col,
       row,
       cellWidth,
@@ -174,7 +204,8 @@ function App() {
       baseVisual,
       colVisuals,
       rowVisuals,
-      cells,
+      cells: cellsWithIds,
+      maxCellId: newMaxCellId,
     });
     if (!blob) return;
     saveBlobToFile(blob, `${fileName}.vrc-tag-marker.png`);
