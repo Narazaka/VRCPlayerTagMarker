@@ -22,6 +22,7 @@ namespace Narazaka.VRChat.TagMarker.World.Tests
 
         void Test_ToggleState_ON()
         {
+            Debug.Log("[Test] Test_ToggleState_ON");
             playerState.selectedCellIds = new ushort[0];
             playerState._ToggleState(10);
             Assert.Equal(new ushort[] { 10 }, playerState.selectedCellIds, this);
@@ -29,6 +30,7 @@ namespace Narazaka.VRChat.TagMarker.World.Tests
 
         void Test_ToggleState_OFF()
         {
+            Debug.Log("[Test] Test_ToggleState_OFF");
             playerState.selectedCellIds = new ushort[] { 10, 20 };
             playerState._ToggleState(10);
             Assert.Equal(new ushort[] { 20 }, playerState.selectedCellIds, this);
@@ -36,6 +38,7 @@ namespace Narazaka.VRChat.TagMarker.World.Tests
 
         void Test_GetToggleStatesForRenderer()
         {
+            Debug.Log("[Test] Test_GetToggleStatesForRenderer");
             playerState.selectedCellIds = new ushort[] { 200 };
             var states = playerState._GetToggleStatesForRenderer();
             Assert.False(states[0], this);
@@ -45,6 +48,7 @@ namespace Narazaka.VRChat.TagMarker.World.Tests
 
         void Test_GetToggleStatesForRenderer_UnknownCellIdIgnored()
         {
+            Debug.Log("[Test] Test_GetToggleStatesForRenderer_UnknownCellIdIgnored");
             playerState.selectedCellIds = new ushort[] { 999 };
             var states = playerState._GetToggleStatesForRenderer();
             for (var i = 0; i < states.Length; i++)
@@ -55,6 +59,7 @@ namespace Narazaka.VRChat.TagMarker.World.Tests
 
         void Test_MigrateFromV0()
         {
+            Debug.Log("[Test] Test_MigrateFromV0");
             playerState.dataVersion = 0;
             var ts = new bool[TagMarkerConstants.MaxCol * TagMarkerConstants.MaxRow];
             ts[0 * TagMarkerConstants.MaxRow + 0] = true;
@@ -80,6 +85,7 @@ namespace Narazaka.VRChat.TagMarker.World.Tests
 
         void Test_MigrateFromV0_SkippedWhenVersion2()
         {
+            Debug.Log("[Test] Test_MigrateFromV0_SkippedWhenVersion2");
             playerState.dataVersion = 2;
             playerState.selectedCellIds = new ushort[] { 42 };
             playerState._MigrateFromV0();
@@ -88,6 +94,7 @@ namespace Narazaka.VRChat.TagMarker.World.Tests
 
         void Test_MigrateFromV0_UnmappedPositionSkipped()
         {
+            Debug.Log("[Test] Test_MigrateFromV0_UnmappedPositionSkipped");
             playerState.dataVersion = 0;
             var ts = new bool[TagMarkerConstants.MaxCol * TagMarkerConstants.MaxRow];
             ts[7 * TagMarkerConstants.MaxRow + 31] = true;
