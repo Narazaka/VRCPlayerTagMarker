@@ -14,7 +14,8 @@ export interface VisualData {
   cells: (CellProps | undefined)[][];
 }
 
-export interface VisualDataWithNull extends Omit<VisualData, "colVisuals" | "rowVisuals" | "cells"> {
+export interface VisualDataWithNull
+  extends Omit<VisualData, "colVisuals" | "rowVisuals" | "cells"> {
   colVisuals: (PartialVisualProps | undefined | null)[];
   rowVisuals: (PartialVisualProps | undefined | null)[];
   cells: (CellProps | undefined | null)[][];

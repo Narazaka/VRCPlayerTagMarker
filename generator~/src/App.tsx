@@ -61,7 +61,9 @@ function App() {
     () => genWithParentVisualProps(baseVisual),
     [baseVisual],
   );
-  const [colVisuals, setColVisuals] = useState<(PartialVisualProps | undefined)[]>([]);
+  const [colVisuals, setColVisuals] = useState<
+    (PartialVisualProps | undefined)[]
+  >([]);
   const setColVisual = useMemo(
     () =>
       Array.from({ length: col }).map(
@@ -78,7 +80,9 @@ function App() {
       ),
     [col],
   );
-  const [rowVisuals, setRowVisuals] = useState<(PartialVisualProps | undefined)[]>([]);
+  const [rowVisuals, setRowVisuals] = useState<
+    (PartialVisualProps | undefined)[]
+  >([]);
   const setRowVisual = useMemo(
     () =>
       Array.from({ length: row }).map(
@@ -122,7 +126,7 @@ function App() {
               }
               newCells[rowIndex] = [...newCells[rowIndex]];
               newCells[rowIndex][colIndex] = stripVisualProps({
-                ...(newCells[rowIndex][colIndex] || {text: ""}),
+                ...(newCells[rowIndex][colIndex] || { text: "" }),
                 ...props,
               });
               return newCells;
