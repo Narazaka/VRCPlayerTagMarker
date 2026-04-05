@@ -204,6 +204,7 @@ function App() {
   const deleteRow = useCallback(
     (rowIndex: number) => {
       if (row <= 1) return;
+      if (!window.confirm(`行 ${rowIndex + 1} を削除しますか？`)) return;
       setRow((prev) => prev - 1);
       setCells((prev) => {
         const newCells = [...prev];
@@ -225,8 +226,13 @@ function App() {
     }),
   );
 
+  const handleDragStart = useCallback(() => {
+    document.body.style.cursor = "grabbing";
+  }, []);
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
+      document.body.style.cursor = "";
       const { over } = event;
       if (!over) return;
       const from = event.active.data.current as { row: number; col: number };
@@ -436,7 +442,11 @@ function App() {
             </Button>
           </Grid.Col>
         </Grid>
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
           <table
             style={{
               width: "100%",
