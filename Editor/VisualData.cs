@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 [assembly: InternalsVisibleTo("Narazaka.VRChat.TagMarker.World.Editor")]
+[assembly: InternalsVisibleTo("Narazaka.VRChat.TagMarker.Tests.Editor")]
 
 namespace Narazaka.VRChat.TagMarker.Editor
 {
