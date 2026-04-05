@@ -28,6 +28,7 @@ import {
   useState,
 } from "react";
 import CellPropsView from "./CellPropsView";
+import RowActions from "./RowActions";
 import type { CellProps } from "./util/CellProps";
 import { draw } from "./util/draw";
 import { useFonts } from "./util/fonts";
@@ -181,6 +182,41 @@ function App() {
       });
     },
     [],
+  );
+
+  const insertRow = useCallback(
+    (afterRowIndex: number) => {
+      setRow((prev) => prev + 1);
+      setCells((prev) => {
+        const newCells = [...prev];
+        newCells.splice(afterRowIndex + 1, 0, Array.from({ length: col }));
+        return newCells;
+      });
+      setRowVisuals((prev) => {
+        const newVisuals = [...prev];
+        newVisuals.splice(afterRowIndex + 1, 0, undefined);
+        return newVisuals;
+      });
+    },
+    [col],
+  );
+
+  const deleteRow = useCallback(
+    (rowIndex: number) => {
+      if (row <= 1) return;
+      setRow((prev) => prev - 1);
+      setCells((prev) => {
+        const newCells = [...prev];
+        newCells.splice(rowIndex, 1);
+        return newCells;
+      });
+      setRowVisuals((prev) => {
+        const newVisuals = [...prev];
+        newVisuals.splice(rowIndex, 1);
+        return newVisuals;
+      });
+    },
+    [row],
   );
 
   const sensors = useSensors(
@@ -439,6 +475,10 @@ function App() {
                       setProps={setRowVisual[rowIndex]}
                       withParentVisualProps={withBaseVisual}
                       fonts={fonts}
+                    />
+                    <RowActions
+                      onInsertRow={() => insertRow(rowIndex)}
+                      onDeleteRow={() => deleteRow(rowIndex)}
                     />
                   </th>
                   {Array.from({ length: col }, (_, colIndex) => {
