@@ -264,6 +264,7 @@ namespace Narazaka.VRChat.TagMarker.Editor
             public int col;
             public int row;
             public string text;
+            public ushort cellId;
 
             [CustomPropertyDrawer(typeof(CellProp))]
             public class CellPropDrawer : PartialVisualPropsDrawer

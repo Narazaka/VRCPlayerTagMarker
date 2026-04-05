@@ -11,13 +11,14 @@ namespace Narazaka.VRChat.TagMarker.World
 
         public void _UpdateRenderer()
         {
-            UpdateRenderer(tagMarkerPlayerState.toggleStates);
+            UpdateRenderer(tagMarkerPlayerState);
         }
 
         public override void OnPlayerRestored(VRCPlayerApi player)
         {
             if (Networking.IsOwner(player, tagMarkerPlayerState.gameObject))
             {
+                tagMarkerPlayerState._MigrateFromV0();
                 tagMarkerPlayerState._AddListener(this);
             }
         }
