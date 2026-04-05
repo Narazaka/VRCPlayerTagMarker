@@ -35,7 +35,7 @@ export function addDataText(
       iTxtChunk,
     );
   }
-  const newPng = encodePng(chunks);
+  const newPng = encodePng(chunks) as Uint8Array<ArrayBuffer>;
   return newPng;
 }
 
