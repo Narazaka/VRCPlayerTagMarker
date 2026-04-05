@@ -76,7 +76,7 @@ namespace Narazaka.VRChat.TagMarker.World
 
         public void _MigrateFromV0()
         {
-            if (dataVersion != 0) return;
+            if (dataVersion >= 2) return;
             var count = 0;
             for (var i = 0; i < toggleStates.Length; i++)
             {
@@ -109,7 +109,7 @@ namespace Narazaka.VRChat.TagMarker.World
                 selectedCellIds = newIds;
             }
             toggleStates = new bool[0];
-            dataVersion = 1;
+            dataVersion = 2;
             RequestSerialization();
         }
 
