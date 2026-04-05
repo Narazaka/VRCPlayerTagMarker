@@ -95,7 +95,8 @@ function VisualPropsView({
         <ActionIcon
           size="xs"
           variant={
-            Object.keys(props).filter((p) => p !== "text").length > 0
+            Object.keys(props).filter((p) => p !== "text" && p !== "cellId")
+              .length > 0
               ? "filled"
               : "default"
           }
