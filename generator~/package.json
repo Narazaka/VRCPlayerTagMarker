@@ -32,13 +32,13 @@
     "@types/png-chunks-extract": "^1.0.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react-swc": "^4.3.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "globals": "^17.4.0",
     "postcss": "^8.5.3",
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "~5.8.3",
-    "vite": "^6.3.5",
+    "vite": "^8.0.3",
     "vite-plugin-node-polyfills": "^0.26.0"
   }
 }
