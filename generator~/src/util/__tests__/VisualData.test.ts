@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { VisualData } from "../VisualData";
 import {
-  toUnityCellProps,
-  toUnityVisualData,
   fromUnityCellProps,
   fromUnityVisualData,
+  toUnityCellProps,
+  toUnityVisualData,
 } from "../VisualData";
 import { defaultVisualProps } from "../VisualProps";
 
@@ -41,7 +41,12 @@ describe("toUnityVisualData", () => {
       baseVisual: defaultVisualProps,
       colVisuals: [],
       rowVisuals: [],
-      cells: [[{ text: "a", cellId: 10 }, { text: "b", cellId: 20 }]],
+      cells: [
+        [
+          { text: "a", cellId: 10 },
+          { text: "b", cellId: 20 },
+        ],
+      ],
       maxCellId: 20,
     };
     const result = toUnityVisualData(data);
@@ -96,7 +101,10 @@ describe("往復変換", () => {
       colVisuals: [],
       rowVisuals: [],
       cells: [
-        [{ text: "a", cellId: 1 }, { text: "b", cellId: 2 }],
+        [
+          { text: "a", cellId: 1 },
+          { text: "b", cellId: 2 },
+        ],
         [{ text: "c", cellId: 3 }, undefined],
       ],
       maxCellId: 3,

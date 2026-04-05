@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
 import * as fs from "node:fs";
+import { expect, test } from "@playwright/test";
 
 test.describe("PNG roundtrip", () => {
   test("テキスト入力→ダウンロード→再読み込みでデータが維持される", async ({
