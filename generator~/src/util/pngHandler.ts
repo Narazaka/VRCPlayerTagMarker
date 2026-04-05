@@ -144,7 +144,7 @@ export async function loadPngDataFromBlob(
   const data = getDataJson<{ [jsKeyword]: VisualDataWithNull }>(png, jsKeyword);
   const visualData = data[jsKeyword];
   if (!visualData) return;
-  const needsCellIdMigration = visualData.version === 1;
+  const needsCellIdMigration = visualData.version < 2;
   let maxCellId = visualData.maxCellId ?? 0;
   const cells = visualData.cells.map((row, rowIndex) =>
     row.map((c, colIndex) => {
