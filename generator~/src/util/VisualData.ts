@@ -42,7 +42,8 @@ type UnityNullableData<T> = NullableFields<
 > &
   Required<T>;
 
-export interface UnityCellProps extends UnityNullableData<CellProps> {
+export interface UnityCellProps
+  extends UnityNullableData<Omit<CellProps, "cellId">> {
   col: number;
   row: number;
   cellId: number;
