@@ -1,0 +1,53 @@
+name: Test
+
+on:
+  pull_request_target: {}
+  workflow_call:
+    secrets:
+      UNITY_LICENSE:
+        required: true
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+  workflow_dispatch: {}
+
+jobs:
+  web-test:
+    name: Web Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+        working-directory: ./generator~
+      - run: npm run check
+        working-directory: ./generator~
+      - run: npm run build
+        working-directory: ./generator~
+      - run: npm test
+        working-directory: ./generator~
+      - run: npx playwright install chromium
+        working-directory: ./generator~
+      - run: npm run e2e
+        working-directory: ./generator~
+
+  unity-test:
+    name: Unity Tests
+    uses: Narazaka/vpm-repos/.github/workflows/gameci.yml@main
+    permissions:
+      checks: write
+    secrets:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    with:
+      unity: 2022.3.22f1
+      vrcsdk-type: worlds
+      vrcsdk-version: 3.10.2
+      repos: |
+        https://vpm.narazaka.net/index.json
+      assemblyNames: Narazaka.VRChat.TagMarker.Tests.Editor
+      assemblyFilters: +Narazaka.VRChat.TagMarker.*,-Narazaka.VRChat.TagMarker.Tests.Editor

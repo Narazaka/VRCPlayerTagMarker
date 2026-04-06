@@ -1,6 +1,6 @@
 name: Build Release
 
-on: 
+on:
   workflow_dispatch:
   push:
     tags:
@@ -8,9 +8,18 @@ on:
 
 permissions:
   contents: write
+  checks: write
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+    secrets:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
   build:
+    needs: test
     uses: Narazaka/vpm-repos/.github/workflows/release.yml@main
     with:
       novcc: false
