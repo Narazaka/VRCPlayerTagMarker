@@ -421,9 +421,7 @@ test.describe("Cell insert/delete", () => {
       await expect(
         page.getByTitle("ここにセルを挿入（右にシフト）"),
       ).toHaveCount(0);
-      await expect(
-        page.getByTitle("セルを削除（左に詰める）"),
-      ).toHaveCount(0);
+      await expect(page.getByTitle("セルを削除（左に詰める）")).toHaveCount(0);
 
       // ドラッグ終了
       await page.mouse.up();
