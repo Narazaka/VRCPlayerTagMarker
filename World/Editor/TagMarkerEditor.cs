@@ -256,6 +256,10 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                 var onPlayerViewTransform = renderer.transform;
                 Undo.RecordObject(onPlayerViewTransform, "Set TagMarker Renderer Transform");
                 onPlayerViewTransform.localScale = new Vector3(size.x, size.y, size.x);
+                if (tagMarkerRender is TagMarkerViewOnPlayer)
+                {
+                    onPlayerViewTransform.localPosition = new Vector3(0, size.y / 2f, 0);
+                }
                 if (tagMarkerRender is TagMarkerStateInnerRenderer)
                 {
                     tagMarkerRenderSo.FindProperty("_tagMarkerPlayerState").objectReferenceValue = tagMarker.tagMarkerPlayerState;
