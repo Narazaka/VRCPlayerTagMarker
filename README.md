@@ -25,6 +25,15 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.4.0-beta.1:
+  - feat: フォントサイズ基準のサイズ計算
+  - (破壊的変更) TagMarkerUI自体がスケールされてしまって、ユーザーでのカスタムスケーリングと競合していた問題を修正。
+    - 新たにAspectRatioという親オブジェクトを作り、そちらをスケールするようにした。
+    - 再Setup時にはTagMarkerUIの手動でのスケール変更（アスペクト比を1:1にする）が必要です。
+  - (破壊的変更) TagMarkerViewOnPlayerがタグスケールによってかぶる調整問題を修正。
+    - 新たにOffsetという親オブジェクトを作った。
+    - タグ下端が一定になるようレンダラーのy位置を調整するようにした。
+    - 再Setup時にはOffsetの手動でのy変更が必要な可能性があります。
 - 0.4.0-beta.0: タグの移動に対応（png形式が変わるので一回pngをWebにインポートして再ダウンロードが必要です）
 - 0.3.3: エディタのvalid判定不具合修正
 - 0.3.2: デフォルト位置調整
