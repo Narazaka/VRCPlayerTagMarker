@@ -17,6 +17,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
         SerializedProperty materialBase;
         SerializedProperty materialOnPlayer;
         SerializedProperty materialOnUI;
+        SerializedProperty textWorldScale;
 
         bool details;
 
@@ -35,6 +36,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             materialBase = serializedObject.FindProperty(nameof(Runtime.TagMarker.materialBase));
             materialOnPlayer = serializedObject.FindProperty(nameof(Runtime.TagMarker.materialOnPlayer));
             materialOnUI = serializedObject.FindProperty(nameof(Runtime.TagMarker.materialOnUI));
+            textWorldScale = serializedObject.FindProperty(nameof(Runtime.TagMarker.textWorldScale));
 
             tagMarkerPlayerState = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerPlayerState));
             toggleStateSender = serializedObject.FindProperty(nameof(Runtime.TagMarker.ToggleStateSender));
@@ -80,6 +82,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             EditorGUILayout.PropertyField(materialBase);
             EditorGUILayout.PropertyField(materialOnPlayer);
             EditorGUILayout.PropertyField(materialOnUI);
+            EditorGUILayout.PropertyField(textWorldScale);
             if (!MaterialsIsValid)
             {
                 EditorGUI.BeginDisabledGroup(data == null);
@@ -199,8 +202,8 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             // Build mapping tables from PNG data
             BuildMappingTables(data.cells, out var mapCellIds, out var mapColPositions, out var mapRowPositions);
 
-            var size = data.size;
             var tagMarker = target as Runtime.TagMarker;
+            var size = data.GetSize(tagMarker.textWorldScale);
 
             // Inject mapping tables into TagMarkerPlayerState
             var tagMarkerPlayerStateSo = new SerializedObject(tagMarker.tagMarkerPlayerState);

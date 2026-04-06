@@ -15,6 +15,11 @@ namespace Narazaka.VRChat.TagMarker.World.Runtime
 
         [Space]
 
+        [SerializeField, Tooltip("フォントサイズ1pxあたりのワールド空間での大きさ(m)")]
+        internal float textWorldScale = 0.03f;
+
+        [Space]
+
         [SerializeField] internal TagMarkerPlayerState tagMarkerPlayerState;
         [SerializeField] internal GameObject ToggleStateSender;
         [SerializeField] internal GameObject ToggleStateSendersColumn;

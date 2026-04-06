@@ -25,20 +25,10 @@ namespace Narazaka.VRChat.TagMarker.Editor
         [SerializeField] internal CellProp[] cells;
         public int width => col * cellWidth;
         public int height => row * cellHeight;
-        public Vector2 size
+        public Vector2 GetSize(float textWorldScale)
         {
-            get
-            {
-                // long side is 1
-                if (width > height)
-                {
-                    return new Vector2(1, (float)height / width);
-                }
-                else
-                {
-                    return new Vector2((float)width / height, 1);
-                }
-            }
+            var s = textWorldScale / baseVisual.fontSize;
+            return new Vector2(width * s, height * s);
         }
 
         [CustomEditor(typeof(VisualData))]
