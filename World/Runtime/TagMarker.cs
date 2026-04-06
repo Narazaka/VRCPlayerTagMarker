@@ -18,7 +18,6 @@ namespace Narazaka.VRChat.TagMarker.World.Runtime
         [SerializeField] internal TagMarkerPlayerState tagMarkerPlayerState;
         [SerializeField] internal GameObject ToggleStateSender;
         [SerializeField] internal GameObject ToggleStateSendersColumn;
-        [SerializeField] internal string tagMarkerUIRendererPath = "TagView";
         [SerializeField] internal string tagMarkerUITagButtonsContainerPath = "Canvas/Container";
     }
 }

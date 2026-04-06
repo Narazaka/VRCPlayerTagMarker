@@ -23,7 +23,6 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
         SerializedProperty tagMarkerPlayerState;
         SerializedProperty toggleStateSender;
         SerializedProperty toggleStateSendersColumn;
-        SerializedProperty tagMarkerUIRendererPath;
         SerializedProperty tagMarkerUITagButtonsContainerPath;
 
         VisualData data;
@@ -40,7 +39,6 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             tagMarkerPlayerState = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerPlayerState));
             toggleStateSender = serializedObject.FindProperty(nameof(Runtime.TagMarker.ToggleStateSender));
             toggleStateSendersColumn = serializedObject.FindProperty(nameof(Runtime.TagMarker.ToggleStateSendersColumn));
-            tagMarkerUIRendererPath = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerUIRendererPath));
             tagMarkerUITagButtonsContainerPath = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerUITagButtonsContainerPath));
         }
 
@@ -100,7 +98,6 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                 EditorGUILayout.PropertyField(tagMarkerPlayerState);
                 EditorGUILayout.PropertyField(toggleStateSender);
                 EditorGUILayout.PropertyField(toggleStateSendersColumn);
-                EditorGUILayout.PropertyField(tagMarkerUIRendererPath);
                 EditorGUILayout.PropertyField(tagMarkerUITagButtonsContainerPath);
             }
             serializedObject.ApplyModifiedProperties();
@@ -265,7 +262,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                 var uiTranform = tagMarkerUI.transform;
                 Undo.RecordObject(uiTranform, "Set TagMarker UI Transform");
                 uiTranform.localScale = new Vector3(size.x, size.y, 1f);
-                var tagView = tagMarkerUI.transform.Find(tagMarker.tagMarkerUIRendererPath).GetComponent<Renderer>();
+                var tagView = tagMarkerUISo.FindProperty("_renderer").objectReferenceValue as Renderer;
                 Undo.RecordObject(tagView, "Set TagMarker UI Material");
                 tagView.sharedMaterial = onUI;
 
