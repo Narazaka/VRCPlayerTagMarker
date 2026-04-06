@@ -1,0 +1,25 @@
+name: Web Test
+
+on:
+  workflow_call: {}
+
+jobs:
+  web-test:
+    name: Web Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+      - run: npm install
+        working-directory: ./generator~
+      - run: npm run check
+        working-directory: ./generator~
+      - run: npm run build
+        working-directory: ./generator~
+      - run: npm test
+        working-directory: ./generator~
+      - run: npx playwright install chromium
+        working-directory: ./generator~
+      - run: npm run e2e
+        working-directory: ./generator~

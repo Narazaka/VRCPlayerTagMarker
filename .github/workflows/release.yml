@@ -11,15 +11,20 @@ permissions:
   checks: write
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
+  web-test:
+    uses: ./.github/workflows/web-test.yml
+
+  unity-test:
+    uses: ./.github/workflows/unity-test.yml
+    permissions:
+      checks: write
     secrets:
       UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
       UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 
   build:
-    needs: test
+    needs: [web-test, unity-test]
     uses: Narazaka/vpm-repos/.github/workflows/release.yml@main
     with:
       novcc: false

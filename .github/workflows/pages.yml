@@ -9,22 +9,17 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  checks: write
 
 concurrency:
   group: "pages"
   cancel-in-progress: true
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
-    secrets:
-      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+  web-test:
+    uses: ./.github/workflows/web-test.yml
 
   deploy:
-    needs: test
+    needs: web-test
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
