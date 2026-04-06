@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  deleteCellShiftLeft,
+  deleteCellShiftUp,
   deleteRowCells,
   deleteRowVisuals,
+  insertCellShiftDown,
+  insertCellShiftRight,
   insertRowCells,
   insertRowVisuals,
+  isCellEmpty,
+  isColumnEmpty,
+  isRowEmpty,
   swapCells,
 } from "../cellOperations";
 
@@ -96,5 +103,240 @@ describe("deleteRowCells / deleteRowVisuals", () => {
     expect(result).toHaveLength(2);
     expect(result[0]?.fontSize).toBe(12);
     expect(result[1]?.fontSize).toBe(16);
+  });
+});
+
+describe("isCellEmpty", () => {
+  it("undefinedは空", () => {
+    expect(isCellEmpty(undefined)).toBe(true);
+  });
+
+  it("空文字列テキストは空", () => {
+    expect(isCellEmpty({ text: "" })).toBe(true);
+  });
+
+  it("テキストありは空でない", () => {
+    expect(isCellEmpty({ text: "A" })).toBe(false);
+  });
+
+  it("スタイルのみでテキストなしは空", () => {
+    expect(isCellEmpty({ text: "", fontSize: 12 })).toBe(true);
+  });
+});
+
+describe("isColumnEmpty", () => {
+  it("全行で指定列が空なら true", () => {
+    const cells = [
+      [{ text: "A" }, undefined],
+      [{ text: "B" }, undefined],
+    ];
+    expect(isColumnEmpty(cells, 1)).toBe(true);
+  });
+
+  it("一部非空なら false", () => {
+    const cells = [
+      [{ text: "A" }, { text: "B" }],
+      [{ text: "C" }, undefined],
+    ];
+    expect(isColumnEmpty(cells, 1)).toBe(false);
+  });
+
+  it("空配列なら true", () => {
+    expect(isColumnEmpty([], 0)).toBe(true);
+  });
+});
+
+describe("isRowEmpty", () => {
+  it("全列が空なら true", () => {
+    const cells = [
+      [undefined, undefined],
+      [{ text: "A" }, { text: "B" }],
+    ];
+    expect(isRowEmpty(cells, 0)).toBe(true);
+  });
+
+  it("一部非空なら false", () => {
+    const cells = [[{ text: "A" }, undefined]];
+    expect(isRowEmpty(cells, 0)).toBe(false);
+  });
+
+  it("存在しない行は true", () => {
+    expect(isRowEmpty([], 5)).toBe(true);
+  });
+});
+
+describe("deleteCellShiftLeft", () => {
+  it("中央セルを削除し左に詰める", () => {
+    const cells = [
+      [
+        { text: "A", cellId: 1 },
+        { text: "B", cellId: 2 },
+        { text: "C", cellId: 3 },
+        { text: "D", cellId: 4 },
+      ],
+    ];
+    const result = deleteCellShiftLeft(cells, 0, 1, 4);
+    expect(result[0][0]?.text).toBe("A");
+    expect(result[0][1]?.text).toBe("C");
+    expect(result[0][2]?.text).toBe("D");
+    expect(result[0][3]).toBeUndefined();
+  });
+
+  it("先頭セルを削除", () => {
+    const cells = [[{ text: "A" }, { text: "B" }, { text: "C" }]];
+    const result = deleteCellShiftLeft(cells, 0, 0, 3);
+    expect(result[0][0]?.text).toBe("B");
+    expect(result[0][1]?.text).toBe("C");
+    expect(result[0][2]).toBeUndefined();
+  });
+
+  it("末尾セルを削除", () => {
+    const cells = [[{ text: "A" }, { text: "B" }, { text: "C" }]];
+    const result = deleteCellShiftLeft(cells, 0, 2, 3);
+    expect(result[0][0]?.text).toBe("A");
+    expect(result[0][1]?.text).toBe("B");
+    expect(result[0][2]).toBeUndefined();
+  });
+
+  it("他の行は変更されない", () => {
+    const cells = [
+      [{ text: "A" }, { text: "B" }],
+      [{ text: "C" }, { text: "D" }],
+    ];
+    const result = deleteCellShiftLeft(cells, 0, 0, 2);
+    expect(result[1][0]?.text).toBe("C");
+    expect(result[1][1]?.text).toBe("D");
+  });
+
+  it("元の配列が変更されない（イミュータブル）", () => {
+    const cells = [[{ text: "A" }, { text: "B" }]];
+    const result = deleteCellShiftLeft(cells, 0, 0, 2);
+    expect(cells[0][0]?.text).toBe("A");
+    expect(result[0][0]?.text).toBe("B");
+  });
+});
+
+describe("deleteCellShiftUp", () => {
+  it("中央セルを削除し上に詰める", () => {
+    const cells = [
+      [{ text: "A" }, { text: "B" }],
+      [{ text: "C" }, { text: "D" }],
+      [{ text: "E" }, { text: "F" }],
+    ];
+    const result = deleteCellShiftUp(cells, 1, 0);
+    expect(result[0][0]?.text).toBe("A");
+    expect(result[1][0]?.text).toBe("E");
+    expect(result[2][0]).toBeUndefined();
+    // 他の列は変更されない
+    expect(result[0][1]?.text).toBe("B");
+    expect(result[1][1]?.text).toBe("D");
+    expect(result[2][1]?.text).toBe("F");
+  });
+
+  it("先頭行セルを削除", () => {
+    const cells = [[{ text: "A" }], [{ text: "B" }], [{ text: "C" }]];
+    const result = deleteCellShiftUp(cells, 0, 0);
+    expect(result[0][0]?.text).toBe("B");
+    expect(result[1][0]?.text).toBe("C");
+    expect(result[2][0]).toBeUndefined();
+  });
+
+  it("末尾行セルを削除", () => {
+    const cells = [[{ text: "A" }], [{ text: "B" }]];
+    const result = deleteCellShiftUp(cells, 1, 0);
+    expect(result[0][0]?.text).toBe("A");
+    expect(result[1][0]).toBeUndefined();
+  });
+
+  it("元の配列が変更されない（イミュータブル）", () => {
+    const cells = [[{ text: "A" }], [{ text: "B" }]];
+    const result = deleteCellShiftUp(cells, 0, 0);
+    expect(cells[0][0]?.text).toBe("A");
+    expect(result[0][0]?.text).toBe("B");
+  });
+});
+
+describe("insertCellShiftRight", () => {
+  it("中央に挿入し右にシフト", () => {
+    const cells = [[{ text: "A" }, { text: "B" }, { text: "C" }]];
+    const result = insertCellShiftRight(cells, 0, 1, 4);
+    expect(result[0][0]?.text).toBe("A");
+    expect(result[0][1]).toBeUndefined();
+    expect(result[0][2]?.text).toBe("B");
+    expect(result[0][3]?.text).toBe("C");
+  });
+
+  it("先頭に挿入", () => {
+    const cells = [[{ text: "A" }, { text: "B" }]];
+    const result = insertCellShiftRight(cells, 0, 0, 3);
+    expect(result[0][0]).toBeUndefined();
+    expect(result[0][1]?.text).toBe("A");
+    expect(result[0][2]?.text).toBe("B");
+  });
+
+  it("末尾に挿入（拡張なしで切り詰め）", () => {
+    const cells = [[{ text: "A" }, { text: "B" }, { text: "C" }]];
+    const result = insertCellShiftRight(cells, 0, 2, 3);
+    expect(result[0][0]?.text).toBe("A");
+    expect(result[0][1]?.text).toBe("B");
+    expect(result[0][2]).toBeUndefined();
+    expect(result[0]).toHaveLength(3);
+  });
+
+  it("他の行は変更されない", () => {
+    const cells = [
+      [{ text: "A" }, { text: "B" }],
+      [{ text: "C" }, { text: "D" }],
+    ];
+    const result = insertCellShiftRight(cells, 0, 0, 3);
+    expect(result[1][0]?.text).toBe("C");
+    expect(result[1][1]?.text).toBe("D");
+  });
+
+  it("元の配列が変更されない（イミュータブル）", () => {
+    const cells = [[{ text: "A" }, { text: "B" }]];
+    const result = insertCellShiftRight(cells, 0, 0, 3);
+    expect(cells[0][0]?.text).toBe("A");
+    expect(result[0][0]).toBeUndefined();
+  });
+});
+
+describe("insertCellShiftDown", () => {
+  it("中央に挿入し下にシフト", () => {
+    const cells = [
+      [{ text: "A" }, { text: "B" }],
+      [{ text: "C" }, { text: "D" }],
+      [{ text: "E" }, { text: "F" }],
+    ];
+    const result = insertCellShiftDown(cells, 1, 0, 4);
+    expect(result[0][0]?.text).toBe("A");
+    expect(result[1][0]).toBeUndefined();
+    expect(result[2][0]?.text).toBe("C");
+    // 他の列は変更されない
+    expect(result[0][1]?.text).toBe("B");
+    expect(result[1][1]?.text).toBe("D");
+    expect(result[2][1]?.text).toBe("F");
+  });
+
+  it("先頭行に挿入", () => {
+    const cells = [[{ text: "A" }], [{ text: "B" }]];
+    const result = insertCellShiftDown(cells, 0, 0, 3);
+    expect(result[0][0]).toBeUndefined();
+    expect(result[1][0]?.text).toBe("A");
+  });
+
+  it("末尾行に挿入（切り詰め）", () => {
+    const cells = [[{ text: "A" }], [{ text: "B" }], [{ text: "C" }]];
+    const result = insertCellShiftDown(cells, 2, 0, 3);
+    expect(result[0][0]?.text).toBe("A");
+    expect(result[1][0]?.text).toBe("B");
+    expect(result[2][0]).toBeUndefined();
+  });
+
+  it("元の配列が変更されない（イミュータブル）", () => {
+    const cells = [[{ text: "A" }], [{ text: "B" }]];
+    const result = insertCellShiftDown(cells, 0, 0, 3);
+    expect(cells[0][0]?.text).toBe("A");
+    expect(result[0][0]).toBeUndefined();
   });
 });

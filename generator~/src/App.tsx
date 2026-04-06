@@ -34,10 +34,17 @@ import RowActions from "./RowActions";
 import type { CellProps } from "./util/CellProps";
 import { assignCellIds as assignCellIdsImpl } from "./util/cellIdAssigner";
 import {
+  deleteCellShiftLeft,
+  deleteCellShiftUp,
   deleteRowCells,
   deleteRowVisuals,
+  insertCellShiftDown,
+  insertCellShiftRight,
   insertRowCells,
   insertRowVisuals,
+  isCellEmpty,
+  isColumnEmpty,
+  isRowEmpty,
   swapCells as swapCellsImpl,
 } from "./util/cellOperations";
 import { draw } from "./util/draw";
@@ -192,6 +199,86 @@ function App() {
       setRowVisuals((prev) => deleteRowVisuals(prev, rowIndex));
     },
     [row],
+  );
+
+  const deleteCellLeft = useCallback(
+    (targetRow: number, targetCol: number) => {
+      if (!window.confirm("セルを削除しますか？（左に詰める）")) return;
+      setCells((prev) => {
+        const newCells = deleteCellShiftLeft(prev, targetRow, targetCol, col);
+        let newCol = col;
+        while (newCol > 1 && isColumnEmpty(newCells, newCol - 1)) {
+          newCol--;
+        }
+        if (newCol < col) {
+          setCol(newCol);
+          setColVisuals((prev) => prev.slice(0, newCol));
+        }
+        return newCells;
+      });
+    },
+    [col],
+  );
+
+  const deleteCellUp = useCallback(
+    (targetRow: number, targetCol: number) => {
+      if (!window.confirm("セルを削除しますか？（上に詰める）")) return;
+      setCells((prev) => {
+        const newCells = deleteCellShiftUp(prev, targetRow, targetCol);
+        let newRow = row;
+        while (newRow > 1 && isRowEmpty(newCells, newRow - 1)) {
+          newRow--;
+        }
+        if (newRow < row) {
+          setRow(newRow);
+          setRowVisuals((prev) => prev.slice(0, newRow));
+        }
+        return newCells;
+      });
+    },
+    [row],
+  );
+
+  const insertCellRight = useCallback(
+    (targetRow: number, targetCol: number) => {
+      const rowCells = cells[targetRow];
+      const lastCell = rowCells?.[col - 1];
+      let newCol = col;
+      if (!isCellEmpty(lastCell)) {
+        newCol = col + 1;
+        setCol(newCol);
+        setColVisuals((prev) => [...prev, undefined]);
+      }
+      setCells((prev) =>
+        insertCellShiftRight(prev, targetRow, targetCol, newCol),
+      );
+    },
+    [col, cells],
+  );
+
+  const insertCellDown = useCallback(
+    (targetRow: number, targetCol: number) => {
+      let newRow = row;
+      const lastRowCells = cells[row - 1];
+      const lastCell = lastRowCells?.[targetCol];
+      if (!isCellEmpty(lastCell)) {
+        newRow = row + 1;
+        setRow(newRow);
+        setRowVisuals((prev) => [...prev, undefined]);
+        setCells((prev) => {
+          const newCells = [...prev];
+          while (newCells.length < newRow) {
+            newCells.push(Array.from({ length: col }));
+          }
+          return insertCellShiftDown(newCells, targetRow, targetCol, newRow);
+        });
+      } else {
+        setCells((prev) =>
+          insertCellShiftDown(prev, targetRow, targetCol, newRow),
+        );
+      }
+    },
+    [row, col, cells],
   );
 
   const sensors = useSensors(
@@ -493,6 +580,14 @@ function App() {
                         row={rowIndex}
                         col={colIndex}
                         style={cellStyle}
+                        onInsertLeft={() => insertCellRight(rowIndex, colIndex)}
+                        onInsertRight={() =>
+                          insertCellRight(rowIndex, colIndex + 1)
+                        }
+                        onInsertTop={() => insertCellDown(rowIndex, colIndex)}
+                        onInsertBottom={() =>
+                          insertCellDown(rowIndex + 1, colIndex)
+                        }
                       >
                         <CellPropsView
                           props={cell}
@@ -503,6 +598,10 @@ function App() {
                           fonts={fonts}
                           row={rowIndex}
                           col={colIndex}
+                          onDeleteLeft={() =>
+                            deleteCellLeft(rowIndex, colIndex)
+                          }
+                          onDeleteUp={() => deleteCellUp(rowIndex, colIndex)}
                         />
                       </DroppableCell>
                     );
