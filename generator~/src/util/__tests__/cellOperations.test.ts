@@ -299,6 +299,15 @@ describe("insertCellShiftRight", () => {
     expect(cells[0][0]?.text).toBe("A");
     expect(result[0][0]).toBeUndefined();
   });
+
+  it("cells配列に対象行が存在しない場合", () => {
+    // row state=3 だが cells配列は1行分しかないケース、row=2に挿入
+    const cells = [[{ text: "A" }]];
+    const result = insertCellShiftRight(cells, 2, 0, 3);
+    expect(result[0][0]?.text).toBe("A");
+    // 対象行が存在しなくてもエラーにならない
+    expect(result).toHaveLength(1);
+  });
 });
 
 describe("insertCellShiftDown", () => {
@@ -338,5 +347,21 @@ describe("insertCellShiftDown", () => {
     const result = insertCellShiftDown(cells, 0, 0, 3);
     expect(cells[0][0]?.text).toBe("A");
     expect(result[0][0]).toBeUndefined();
+  });
+
+  it("cells配列がrowCountより短い場合にセルが消失しない", () => {
+    // row state=3 だが cells配列は2行分しかないケース
+    const cells = [[{ text: "A" }], [{ text: "B" }]];
+    const result = insertCellShiftDown(cells, 0, 0, 3);
+    expect(result[0][0]).toBeUndefined();
+    expect(result[1][0]?.text).toBe("A");
+    expect(result[2][0]?.text).toBe("B");
+  });
+
+  it("cells配列がrowCountより大幅に短い場合", () => {
+    const cells = [[{ text: "A" }]];
+    const result = insertCellShiftDown(cells, 0, 0, 4);
+    expect(result[0][0]).toBeUndefined();
+    expect(result[1][0]?.text).toBe("A");
   });
 });

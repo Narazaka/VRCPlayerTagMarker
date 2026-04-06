@@ -76,7 +76,10 @@ export function insertCellShiftDown(
   rowCount: number,
 ): (CellProps | undefined)[][] {
   const newCells = cells.map((r) => (r ? [...r] : []));
-  for (let i = Math.min(rowCount - 1, newCells.length - 1); i > row; i--) {
+  while (newCells.length < rowCount) {
+    newCells.push([]);
+  }
+  for (let i = rowCount - 1; i > row; i--) {
     newCells[i][col] = newCells[i - 1]?.[col];
   }
   if (newCells[row]) {
