@@ -8,6 +8,7 @@ export interface VisualData {
   cellWidth: number;
   cellHeight: number;
   spacing: number;
+  resolution?: number;
   baseVisual: VisualProps;
   colVisuals: (PartialVisualProps | undefined)[];
   rowVisuals: (PartialVisualProps | undefined)[];
@@ -18,13 +19,14 @@ export interface VisualData {
 export interface VisualDataWithNull
   extends Omit<
     VisualData,
-    "colVisuals" | "rowVisuals" | "cells" | "maxCellId"
+    "colVisuals" | "rowVisuals" | "cells" | "maxCellId" | "resolution"
   > {
   version: 1 | 2;
   colVisuals: (PartialVisualProps | undefined | null)[];
   rowVisuals: (PartialVisualProps | undefined | null)[];
   cells: (CellProps | undefined | null)[][];
   maxCellId?: number | null;
+  resolution?: number | null;
 }
 
 type NullableKeys<T> = {
@@ -57,6 +59,7 @@ export interface UnityVisualData {
   cellWidth: number;
   cellHeight: number;
   spacing: number;
+  resolution: number;
   baseVisual: VisualProps;
   colVisuals: UnityPartialVisualProps[];
   rowVisuals: UnityPartialVisualProps[];
@@ -119,6 +122,7 @@ export function toUnityVisualData(data: VisualData): UnityVisualData {
     cellWidth: data.cellWidth,
     cellHeight: data.cellHeight,
     spacing: data.spacing,
+    resolution: data.resolution ?? 1,
     baseVisual: data.baseVisual,
     colVisuals: data.colVisuals.map(toUnityPartialVisualProps),
     rowVisuals: data.rowVisuals.map(toUnityPartialVisualProps),
@@ -177,6 +181,7 @@ export function fromUnityVisualData(data: UnityVisualData): VisualData {
     cellWidth: data.cellWidth,
     cellHeight: data.cellHeight,
     spacing: data.spacing,
+    resolution: data.resolution,
     baseVisual: data.baseVisual,
     colVisuals: data.colVisuals.map(fromUnityPartialVisualProps),
     rowVisuals: data.rowVisuals.map(fromUnityPartialVisualProps),

@@ -75,9 +75,10 @@ function App() {
   const [fileName, setFileName] = useState("タグマーカー");
   const [col, setCol] = useState(3);
   const [row, setRow] = useState(4);
-  const [cellWidth, setCellWidth] = useState(256);
-  const [cellHeight, setCellHeight] = useState(64);
-  const [spacing, setSpacing] = useState(6);
+  const [cellWidth, setCellWidth] = useState(512);
+  const [cellHeight, setCellHeight] = useState(128);
+  const [spacing, setSpacing] = useState(12);
+  const [resolution, setResolution] = useState(1);
   const [baseVisual, setBaseVisual] = useReducer(
     (state, action: PartialVisualProps) => ({ ...state, ...action }),
     defaultVisualProps,
@@ -230,9 +231,10 @@ function App() {
           );
           setCol(data.col || 3);
           setRow(data.row || 4);
-          setCellWidth(data.cellWidth || 256);
-          setCellHeight(data.cellHeight || 64);
-          setSpacing(data.spacing || 6);
+          setCellWidth(data.cellWidth || 512);
+          setCellHeight(data.cellHeight || 128);
+          setSpacing(data.spacing ?? 12);
+          setResolution(data.resolution ?? 1);
           setBaseVisual(data.baseVisual || defaultVisualProps);
           setColVisuals(data.colVisuals || []);
           setRowVisuals(data.rowVisuals || []);
@@ -256,6 +258,7 @@ function App() {
       cellWidth,
       cellHeight,
       spacing,
+      resolution,
       baseVisual,
       colVisuals,
       rowVisuals,
@@ -265,23 +268,27 @@ function App() {
     if (!blob) return;
     saveBlobToFile(blob, `${fileName}.vrc-tag-marker.png`);
   };
-  const canvasWidth = col * cellWidth;
-  const canvasHeight = row * cellHeight;
+  const canvasWidth = col * cellWidth * resolution;
+  const canvasHeight = row * cellHeight * resolution;
 
   const drawParams = useMemo(
     () => ({
       col,
       row,
-      cellWidth,
-      cellHeight,
-      spacing,
-      baseVisual,
+      cellWidth: cellWidth * resolution,
+      cellHeight: cellHeight * resolution,
+      spacing: spacing * resolution,
       cells: Array.from({ length: row }).map((_, rowIndex) =>
-        Array.from({ length: col }).map((_, colIndex) =>
-          withRowColVisuals[rowIndex][colIndex](
+        Array.from({ length: col }).map((_, colIndex) => {
+          const resolved = withRowColVisuals[rowIndex][colIndex](
             cells[rowIndex]?.[colIndex] || { text: "" },
-          ),
-        ),
+          );
+          return {
+            ...resolved,
+            fontSize: resolved.fontSize * resolution,
+            outlineWidth: resolved.outlineWidth * resolution,
+          };
+        }),
       ),
     }),
     [
@@ -290,7 +297,7 @@ function App() {
       cellWidth,
       cellHeight,
       spacing,
-      baseVisual,
+      resolution,
       withRowColVisuals,
       cells,
     ],
@@ -377,7 +384,7 @@ function App() {
               value={cellWidth}
               onChange={(value) => setCellWidth(value)}
               min={1}
-              max={512}
+              max={1024}
             />
           </Grid.Col>
           <Grid.Col span={2}>
@@ -392,7 +399,7 @@ function App() {
               value={cellHeight}
               onChange={(value) => setCellHeight(value)}
               min={1}
-              max={512}
+              max={1024}
             />
           </Grid.Col>
           <Grid.Col span={1}>
@@ -407,6 +414,17 @@ function App() {
               onChange={(value) => setSpacing(value)}
               min={0}
               max={128}
+            />
+          </Grid.Col>
+          <Grid.Col span={1}>
+            <NumberInput
+              size="xs"
+              value={resolution}
+              onChange={(e) => setResolution(Number(e))}
+              label="解像度倍率"
+              min={0.5}
+              max={4}
+              step={0.5}
             />
           </Grid.Col>
           <Grid.Col span={2.5}>

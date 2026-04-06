@@ -147,6 +147,7 @@ export async function loadPngDataFromBlob(
   return {
     ...visualData,
     version: 2,
+    resolution: visualData.resolution ?? undefined,
     colVisuals: visualData.colVisuals.map((v) => v ?? undefined),
     rowVisuals: visualData.rowVisuals.map((v) => v ?? undefined),
     cells,
