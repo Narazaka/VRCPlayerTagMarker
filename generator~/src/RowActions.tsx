@@ -10,7 +10,7 @@ function RowActions({
   onDeleteRow: () => void;
 }) {
   return (
-    <Group gap={2}>
+    <Group gap={2} justify="flex-end">
       <ActionIcon
         size="xs"
         variant="subtle"
