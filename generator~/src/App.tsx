@@ -29,6 +29,7 @@ import {
   useState,
 } from "react";
 import CellPropsView from "./CellPropsView";
+import ColumnActions from "./ColumnActions";
 import DroppableCell from "./DroppableCell";
 import RowActions from "./RowActions";
 import type { CellProps } from "./util/CellProps";
@@ -36,10 +37,14 @@ import { assignCellIds as assignCellIdsImpl } from "./util/cellIdAssigner";
 import {
   deleteCellShiftLeft,
   deleteCellShiftUp,
+  deleteColumnCells,
+  deleteColumnVisuals,
   deleteRowCells,
   deleteRowVisuals,
   insertCellShiftDown,
   insertCellShiftRight,
+  insertColumnCells,
+  insertColumnVisuals,
   insertRowCells,
   insertRowVisuals,
   isCellEmpty,
@@ -199,6 +204,23 @@ function App() {
       setRowVisuals((prev) => deleteRowVisuals(prev, rowIndex));
     },
     [row],
+  );
+
+  const insertColumn = useCallback((afterColIndex: number) => {
+    setCol((prev) => prev + 1);
+    setCells((prev) => insertColumnCells(prev, afterColIndex));
+    setColVisuals((prev) => insertColumnVisuals(prev, afterColIndex));
+  }, []);
+
+  const deleteColumn = useCallback(
+    (colIndex: number) => {
+      if (col <= 1) return;
+      if (!window.confirm(`列 ${colIndex + 1} を削除しますか？`)) return;
+      setCol((prev) => prev - 1);
+      setCells((prev) => deleteColumnCells(prev, colIndex));
+      setColVisuals((prev) => deleteColumnVisuals(prev, colIndex));
+    },
+    [col],
   );
 
   const deleteCellLeft = useCallback(
@@ -543,6 +565,10 @@ function App() {
                       setProps={setColVisual[colIndex]}
                       withParentVisualProps={withBaseVisual}
                       fonts={fonts}
+                    />
+                    <ColumnActions
+                      onInsertColumn={() => insertColumn(colIndex)}
+                      onDeleteColumn={() => deleteColumn(colIndex)}
                     />
                   </th>
                 ))}

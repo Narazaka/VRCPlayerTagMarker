@@ -140,3 +140,43 @@ export function deleteRowVisuals(
   newVisuals.splice(rowIndex, 1);
   return newVisuals;
 }
+
+export function insertColumnCells(
+  cells: (CellProps | undefined)[][],
+  afterColIndex: number,
+): (CellProps | undefined)[][] {
+  return cells.map((row) => {
+    const newRow = [...row];
+    newRow.splice(afterColIndex + 1, 0, undefined);
+    return newRow;
+  });
+}
+
+export function insertColumnVisuals(
+  colVisuals: (PartialVisualProps | undefined)[],
+  afterColIndex: number,
+): (PartialVisualProps | undefined)[] {
+  const newVisuals = [...colVisuals];
+  newVisuals.splice(afterColIndex + 1, 0, undefined);
+  return newVisuals;
+}
+
+export function deleteColumnCells(
+  cells: (CellProps | undefined)[][],
+  colIndex: number,
+): (CellProps | undefined)[][] {
+  return cells.map((row) => {
+    const newRow = [...row];
+    newRow.splice(colIndex, 1);
+    return newRow;
+  });
+}
+
+export function deleteColumnVisuals(
+  colVisuals: (PartialVisualProps | undefined)[],
+  colIndex: number,
+): (PartialVisualProps | undefined)[] {
+  const newVisuals = [...colVisuals];
+  newVisuals.splice(colIndex, 1);
+  return newVisuals;
+}

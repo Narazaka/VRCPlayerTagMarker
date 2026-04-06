@@ -2,10 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   deleteCellShiftLeft,
   deleteCellShiftUp,
+  deleteColumnCells,
+  deleteColumnVisuals,
   deleteRowCells,
   deleteRowVisuals,
   insertCellShiftDown,
   insertCellShiftRight,
+  insertColumnCells,
+  insertColumnVisuals,
   insertRowCells,
   insertRowVisuals,
   isCellEmpty,
@@ -363,5 +367,97 @@ describe("insertCellShiftDown", () => {
     const result = insertCellShiftDown(cells, 0, 0, 4);
     expect(result[0][0]).toBeUndefined();
     expect(result[1][0]?.text).toBe("A");
+  });
+});
+
+describe("insertColumnCells", () => {
+  it("中央に列を挿入", () => {
+    const cells = [
+      [{ text: "A" }, { text: "B" }, { text: "C" }],
+      [{ text: "D" }, { text: "E" }, { text: "F" }],
+    ];
+    const result = insertColumnCells(cells, 1);
+    expect(result[0].map((c) => c?.text)).toEqual(["A", "B", undefined, "C"]);
+    expect(result[1].map((c) => c?.text)).toEqual(["D", "E", undefined, "F"]);
+  });
+
+  it("先頭列の右に挿入", () => {
+    const cells = [[{ text: "A" }, { text: "B" }]];
+    const result = insertColumnCells(cells, 0);
+    expect(result[0].map((c) => c?.text)).toEqual(["A", undefined, "B"]);
+  });
+
+  it("末尾列の右に挿入", () => {
+    const cells = [[{ text: "A" }, { text: "B" }]];
+    const result = insertColumnCells(cells, 1);
+    expect(result[0].map((c) => c?.text)).toEqual(["A", "B", undefined]);
+  });
+
+  it("元の配列が変更されない（イミュータブル）", () => {
+    const cells = [[{ text: "A" }, { text: "B" }]];
+    const result = insertColumnCells(cells, 0);
+    expect(cells[0]).toHaveLength(2);
+    expect(result[0]).toHaveLength(3);
+  });
+});
+
+describe("deleteColumnCells", () => {
+  it("中央列を削除", () => {
+    const cells = [
+      [{ text: "A" }, { text: "B" }, { text: "C" }],
+      [{ text: "D" }, { text: "E" }, { text: "F" }],
+    ];
+    const result = deleteColumnCells(cells, 1);
+    expect(result[0].map((c) => c?.text)).toEqual(["A", "C"]);
+    expect(result[1].map((c) => c?.text)).toEqual(["D", "F"]);
+  });
+
+  it("先頭列を削除", () => {
+    const cells = [[{ text: "A" }, { text: "B" }]];
+    const result = deleteColumnCells(cells, 0);
+    expect(result[0].map((c) => c?.text)).toEqual(["B"]);
+  });
+
+  it("末尾列を削除", () => {
+    const cells = [[{ text: "A" }, { text: "B" }]];
+    const result = deleteColumnCells(cells, 1);
+    expect(result[0].map((c) => c?.text)).toEqual(["A"]);
+  });
+
+  it("元の配列が変更されない（イミュータブル）", () => {
+    const cells = [[{ text: "A" }, { text: "B" }]];
+    const result = deleteColumnCells(cells, 0);
+    expect(cells[0]).toHaveLength(2);
+    expect(result[0]).toHaveLength(1);
+  });
+});
+
+describe("insertColumnVisuals", () => {
+  it("中央に挿入", () => {
+    const visuals = [{ fontSize: 10 }, { fontSize: 20 }];
+    const result = insertColumnVisuals(visuals, 0);
+    expect(result).toEqual([{ fontSize: 10 }, undefined, { fontSize: 20 }]);
+  });
+
+  it("元の配列が変更されない", () => {
+    const visuals = [{ fontSize: 10 }];
+    const result = insertColumnVisuals(visuals, 0);
+    expect(visuals).toHaveLength(1);
+    expect(result).toHaveLength(2);
+  });
+});
+
+describe("deleteColumnVisuals", () => {
+  it("中央を削除", () => {
+    const visuals = [{ fontSize: 10 }, { fontSize: 20 }, { fontSize: 30 }];
+    const result = deleteColumnVisuals(visuals, 1);
+    expect(result).toEqual([{ fontSize: 10 }, { fontSize: 30 }]);
+  });
+
+  it("元の配列が変更されない", () => {
+    const visuals = [{ fontSize: 10 }, { fontSize: 20 }];
+    const result = deleteColumnVisuals(visuals, 0);
+    expect(visuals).toHaveLength(2);
+    expect(result).toHaveLength(1);
   });
 });
