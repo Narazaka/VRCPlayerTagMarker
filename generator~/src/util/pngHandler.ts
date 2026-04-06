@@ -120,21 +120,8 @@ export function saveBlobToFile(blob: Blob, filename: string): void {
   URL.revokeObjectURL(link.href);
 }
 
-export function loadFromBlob(file: Blob): Promise<Uint8Array> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        resolve(new Uint8Array(event.target.result as ArrayBuffer));
-      } else {
-        reject(new Error("Failed to read file"));
-      }
-    };
-    reader.onerror = (error) => {
-      reject(error);
-    };
-    reader.readAsArrayBuffer(file);
-  });
+export async function loadFromBlob(file: Blob): Promise<Uint8Array> {
+  return new Uint8Array(await file.arrayBuffer());
 }
 
 export async function loadPngDataFromBlob(
