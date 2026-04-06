@@ -105,6 +105,19 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             }
             serializedObject.ApplyModifiedProperties();
 
+            if (tagMarkerPlayerState.objectReferenceValue != null)
+            {
+                var playerStateSo = new SerializedObject(tagMarkerPlayerState.objectReferenceValue);
+                var skipMigrationProp = playerStateSo.FindProperty("skipMigration");
+                playerStateSo.Update();
+                EditorGUILayout.PropertyField(skipMigrationProp, new GUIContent("旧データからの移行をスキップ"));
+                if (skipMigrationProp.boolValue)
+                {
+                    EditorGUILayout.HelpBox("ONにすると、旧形式のタグ選択データを新形式に移行せず、リセットします。タグ構成を大幅に変更して旧データとの対応が取れない場合に使用してください。", MessageType.Warning);
+                }
+                playerStateSo.ApplyModifiedProperties();
+            }
+
             EditorGUI.BeginDisabledGroup(data == null || !MaterialsIsValid);
             if (GUILayout.Button("Setup"))
             {

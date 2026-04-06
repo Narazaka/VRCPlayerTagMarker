@@ -21,6 +21,7 @@ namespace Narazaka.VRChat.TagMarker.World
         [SerializeField] byte[] mapRowPositions;
         [SerializeField] byte[] mapColPositions;
         [SerializeField] ushort[] mapCellIds;
+        [SerializeField] bool skipMigration;
 
         TagMarkerStateRenderer[] _listeners = new TagMarkerStateRenderer[0];
 
@@ -80,6 +81,14 @@ namespace Narazaka.VRChat.TagMarker.World
         public void _MigrateFromV0()
         {
             if (dataVersion >= 2) return;
+            if (skipMigration)
+            {
+                toggleStates = new bool[0];
+                selectedCellIds = new ushort[0];
+                dataVersion = 2;
+                RequestSerialization();
+                return;
+            }
             var count = 0;
             for (var i = 0; i < toggleStates.Length; i++)
             {
