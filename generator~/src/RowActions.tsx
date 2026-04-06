@@ -14,19 +14,19 @@ function RowActions({
       <ActionIcon
         size="xs"
         variant="subtle"
-        onClick={onInsertRow}
-        title="行を下に挿入"
-      >
-        <IoAdd size={14} />
-      </ActionIcon>
-      <ActionIcon
-        size="xs"
-        variant="subtle"
         color="red"
         onClick={onDeleteRow}
         title="行を削除"
       >
         <IoRemove size={14} />
+      </ActionIcon>
+      <ActionIcon
+        size="xs"
+        variant="subtle"
+        onClick={onInsertRow}
+        title="行を下に挿入"
+      >
+        <IoAdd size={14} />
       </ActionIcon>
     </Group>
   );

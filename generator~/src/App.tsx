@@ -11,6 +11,7 @@ import {
   Button,
   Container,
   Grid,
+  Group,
   NumberInput,
   Slider,
   Stack,
@@ -577,16 +578,18 @@ function App() {
                 // biome-ignore lint/suspicious/noArrayIndexKey: no id
                 <tr key={rowIndex}>
                   <th style={cellStyle}>
-                    <VisualPropsView
-                      props={rowVisuals[rowIndex]}
-                      setProps={setRowVisual[rowIndex]}
-                      withParentVisualProps={withBaseVisual}
-                      fonts={fonts}
-                    />
-                    <RowActions
-                      onInsertRow={() => insertRow(rowIndex)}
-                      onDeleteRow={() => deleteRow(rowIndex)}
-                    />
+                    <Group justify="space-between" align="center" gap={0} wrap="nowrap">
+                      <VisualPropsView
+                        props={rowVisuals[rowIndex]}
+                        setProps={setRowVisual[rowIndex]}
+                        withParentVisualProps={withBaseVisual}
+                        fonts={fonts}
+                      />
+                      <RowActions
+                        onInsertRow={() => insertRow(rowIndex)}
+                        onDeleteRow={() => deleteRow(rowIndex)}
+                      />
+                    </Group>
                   </th>
                   {Array.from({ length: col }, (_, colIndex) => {
                     const cell = cells[rowIndex]?.[colIndex];

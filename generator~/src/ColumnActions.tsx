@@ -14,19 +14,19 @@ function ColumnActions({
       <ActionIcon
         size="xs"
         variant="subtle"
-        onClick={onInsertColumn}
-        title="列を右に挿入"
-      >
-        <IoAdd size={14} />
-      </ActionIcon>
-      <ActionIcon
-        size="xs"
-        variant="subtle"
         color="red"
         onClick={onDeleteColumn}
         title="列を削除"
       >
         <IoRemove size={14} />
+      </ActionIcon>
+      <ActionIcon
+        size="xs"
+        variant="subtle"
+        onClick={onInsertColumn}
+        title="列を右に挿入"
+      >
+        <IoAdd size={14} />
       </ActionIcon>
     </Group>
   );
