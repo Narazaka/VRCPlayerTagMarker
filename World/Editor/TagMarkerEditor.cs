@@ -259,14 +259,14 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                 var tagMarkerUISo = new SerializedObject(tagMarkerUI);
                 tagMarkerUISo.FindProperty("tagMarkerPlayerStateInPrefab").objectReferenceValue = tagMarker.tagMarkerPlayerState;
                 tagMarkerUISo.ApplyModifiedProperties();
-                var uiTranform = tagMarkerUI.transform;
-                Undo.RecordObject(uiTranform, "Set TagMarker UI Transform");
-                uiTranform.localScale = new Vector3(size.x, size.y, 1f);
+                var aspectRatioTransform = tagMarkerUI.transform.GetChild(0);
+                Undo.RecordObject(aspectRatioTransform, "Set TagMarker UI Aspect Ratio");
+                aspectRatioTransform.localScale = new Vector3(size.x, size.y, 1f);
                 var tagView = tagMarkerUISo.FindProperty("_renderer").objectReferenceValue as Renderer;
                 Undo.RecordObject(tagView, "Set TagMarker UI Material");
                 tagView.sharedMaterial = onUI;
 
-                var tagButtonsContainer = tagMarkerUI.transform.Find(tagMarker.tagMarkerUITagButtonsContainerPath);
+                var tagButtonsContainer = aspectRatioTransform.Find(tagMarker.tagMarkerUITagButtonsContainerPath);
 
                 var toDeletes = new List<GameObject>();
                 foreach (Transform child in tagButtonsContainer)
