@@ -17,6 +17,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
         SerializedProperty materialBase;
         SerializedProperty materialOnPlayer;
         SerializedProperty materialOnUI;
+        SerializedProperty useTextWorldScale;
         SerializedProperty textWorldScale;
 
         bool details;
@@ -36,6 +37,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             materialBase = serializedObject.FindProperty(nameof(Runtime.TagMarker.materialBase));
             materialOnPlayer = serializedObject.FindProperty(nameof(Runtime.TagMarker.materialOnPlayer));
             materialOnUI = serializedObject.FindProperty(nameof(Runtime.TagMarker.materialOnUI));
+            useTextWorldScale = serializedObject.FindProperty(nameof(Runtime.TagMarker.useTextWorldScale));
             textWorldScale = serializedObject.FindProperty(nameof(Runtime.TagMarker.textWorldScale));
 
             tagMarkerPlayerState = serializedObject.FindProperty(nameof(Runtime.TagMarker.tagMarkerPlayerState));
@@ -82,7 +84,11 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             EditorGUILayout.PropertyField(materialBase);
             EditorGUILayout.PropertyField(materialOnPlayer);
             EditorGUILayout.PropertyField(materialOnUI);
-            EditorGUILayout.PropertyField(textWorldScale);
+            EditorGUILayout.PropertyField(useTextWorldScale);
+            if (useTextWorldScale.boolValue)
+            {
+                EditorGUILayout.PropertyField(textWorldScale);
+            }
             if (!MaterialsIsValid)
             {
                 EditorGUI.BeginDisabledGroup(data == null);
@@ -203,7 +209,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             BuildMappingTables(data.cells, out var mapCellIds, out var mapColPositions, out var mapRowPositions);
 
             var tagMarker = target as Runtime.TagMarker;
-            var size = data.GetSize(tagMarker.textWorldScale);
+            var size = tagMarker.useTextWorldScale ? data.GetSize(tagMarker.textWorldScale) : data.GetSize();
 
             // Inject mapping tables into TagMarkerPlayerState
             var tagMarkerPlayerStateSo = new SerializedObject(tagMarker.tagMarkerPlayerState);

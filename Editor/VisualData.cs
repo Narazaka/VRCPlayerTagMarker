@@ -31,6 +31,12 @@ namespace Narazaka.VRChat.TagMarker.Editor
             return new Vector2(width * s, height * s);
         }
 
+        public Vector2 GetSize()
+        {
+            var longSide = (float)Mathf.Max(width, height);
+            return new Vector2(width / longSide, height / longSide);
+        }
+
         [CustomEditor(typeof(VisualData))]
         public class VisualDataEditor : UnityEditor.Editor
         {

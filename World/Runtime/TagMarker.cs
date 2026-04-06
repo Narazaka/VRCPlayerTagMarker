@@ -15,6 +15,8 @@ namespace Narazaka.VRChat.TagMarker.World.Runtime
 
         [Space]
 
+        [SerializeField, Tooltip("ONにするとフォントサイズに基づいてサイズを自動計算します。OFFの場合は長辺を1とした固定比率になります。")]
+        internal bool useTextWorldScale = true;
         [SerializeField, Tooltip("フォントサイズ1pxあたりのワールド空間での大きさ(m)")]
         internal float textWorldScale = 0.03f;
 
