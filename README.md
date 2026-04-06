@@ -25,6 +25,8 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.4.0-beta.2:
+  - リリースパッケージからテスト除外
 - 0.4.0-beta.1:
   - feat: フォントサイズ基準のサイズ計算
   - (破壊的変更) TagMarkerUI自体がスケールされてしまって、ユーザーでのカスタムスケーリングと競合していた問題を修正。
