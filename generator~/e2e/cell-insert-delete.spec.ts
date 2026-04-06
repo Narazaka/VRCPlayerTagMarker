@@ -248,6 +248,106 @@ test.describe("Cell insert/delete", () => {
     });
   });
 
+  test.describe("セル削除（上に詰める）— 行数減少", () => {
+    test("削除後に最下行が全列空なら行数が減る", async ({ page }) => {
+      page.on("dialog", (d) => d.accept());
+
+      const inputs = await page.locator("table td input").all();
+      const col = 3;
+      // 行0と行1の列0にデータ入力（行2,3は空）
+      await inputs[0].fill("A");
+      await inputs[col].fill("B");
+
+      // 行0を削除（上に詰め）→ [B, "", "", ""] → 最下行が全列空なら行数減
+      await hoverCellAndClick(page, 0, 0, "セルを削除（上に詰める）");
+      await page.waitForTimeout(300);
+
+      const texts = await getCellTexts(page);
+      expect(texts[0][0]).toBe("B");
+      // 行数が減っていることを確認（元4行→3行）
+      expect(texts.length).toBeLessThan(4);
+    });
+  });
+
+  test.describe("グリッド縮小は1操作で最大1行/1列", () => {
+    test("削除で最大1列のみ縮小される（再帰的に複数列縮小しない）", async ({
+      page,
+    }) => {
+      page.on("dialog", (d) => d.accept());
+
+      const inputs = await page.locator("table td input").all();
+      // デフォルト3列。列0のみにデータ、列1,2は空
+      await inputs[0].fill("A");
+
+      // 列0のセルを削除（左に詰め）→ ["", "", ""]
+      // 列2が空→1列縮小→2列。しかし列1も空だが再帰しないので2列のまま
+      await hoverCellAndClick(page, 0, 0, "セルを削除（左に詰める）");
+      await page.waitForTimeout(300);
+
+      const texts = await getCellTexts(page);
+      // 3列→2列（1列のみ縮小、1列にはならない）
+      expect(texts[0].length).toBe(2);
+    });
+
+    test("削除で最大1行のみ縮小される（再帰的に複数行縮小しない）", async ({
+      page,
+    }) => {
+      page.on("dialog", (d) => d.accept());
+
+      const inputs = await page.locator("table td input").all();
+      const col = 3;
+      // 行0のみにデータ、行1,2,3は空
+      await inputs[0].fill("A");
+
+      // 行0のセルを削除（上に詰め）→ 全行空
+      // 最下行が空→1行縮小→3行。しかし新最下行も空だが再帰しないので3行のまま
+      await hoverCellAndClick(page, 0, 0, "セルを削除（上に詰める）");
+      await page.waitForTimeout(300);
+
+      const texts = await getCellTexts(page);
+      // 4行→3行（1行のみ縮小、1行にはならない）
+      expect(texts.length).toBe(3);
+    });
+  });
+
+  test.describe("挿入時にサイズが維持されるケース", () => {
+    test("末尾が空なら列数は増えない", async ({ page }) => {
+      const inputs = await page.locator("table td input").all();
+      // デフォルト3列。列0,1にデータ、列2は空
+      await inputs[0].fill("A");
+      await inputs[1].fill("B");
+
+      // 列0に挿入（右シフト）→ ["", A, B] 末尾のBが列2に収まる→列数3のまま
+      await hoverCellAndClick(page, 0, 0, "ここにセルを挿入（右にシフト）");
+      await page.waitForTimeout(300);
+
+      const texts = await getCellTexts(page);
+      expect(texts[0].length).toBe(3);
+      expect(texts[0][0]).toBe("");
+      expect(texts[0][1]).toBe("A");
+      expect(texts[0][2]).toBe("B");
+    });
+
+    test("末尾が空なら行数は増えない", async ({ page }) => {
+      const inputs = await page.locator("table td input").all();
+      const col = 3;
+      // 行0,1にデータ、行2,3は空
+      await inputs[0].fill("A");
+      await inputs[col].fill("B");
+
+      // 行0に挿入（下シフト）→ ["", A, B, ""] 末尾が空なので行数4のまま
+      await hoverCellAndClick(page, 0, 0, "ここにセルを挿入（下にシフト）");
+      await page.waitForTimeout(300);
+
+      const texts = await getCellTexts(page);
+      expect(texts.length).toBe(4);
+      expect(texts[0][0]).toBe("");
+      expect(texts[1][0]).toBe("A");
+      expect(texts[2][0]).toBe("B");
+      expect(texts[3][0]).toBe("");
+    });
+  });
+
   test.describe("ホバーUI表示", () => {
     test("セルにホバーすると挿入ボタンが表示される", async ({ page }) => {
       const dataRows = await page.locator("table tbody tr").all();
@@ -287,6 +387,46 @@ test.describe("Cell insert/delete", () => {
 
       await expect(page.getByTitle("セルを削除（左に詰める）")).toBeVisible();
       await expect(page.getByTitle("セルを削除（上に詰める）")).toBeVisible();
+    });
+
+    test("ドラッグ中は挿入/削除ボタンが表示されない", async ({ page }) => {
+      // セルにテキストを入力（ドラッグハンドルが表示されるように）
+      const inputs = await page.locator("table td input").all();
+      await inputs[0].fill("A");
+      await inputs[1].fill("B");
+
+      const dataRows = await page.locator("table tbody tr").all();
+      const row = dataRows[1];
+      const cells = await row.locator("td").all();
+      const sourceCell = cells[0];
+      const targetCell = cells[1];
+
+      // ドラッグハンドルを取得
+      const dragHandle = sourceCell.locator("[role='button']").first();
+
+      // ドラッグ開始（途中で保持）
+      await dragHandle.hover();
+      await page.mouse.down();
+      // ターゲットセルに移動（ドラッグ中状態を作る）
+      const targetBox = await targetCell.boundingBox();
+      if (targetBox) {
+        await page.mouse.move(
+          targetBox.x + targetBox.width / 2,
+          targetBox.y + targetBox.height / 2,
+        );
+      }
+      await page.waitForTimeout(200);
+
+      // ドラッグ中は挿入ボタンが非表示
+      await expect(
+        page.getByTitle("ここにセルを挿入（右にシフト）"),
+      ).toHaveCount(0);
+      await expect(
+        page.getByTitle("セルを削除（左に詰める）"),
+      ).toHaveCount(0);
+
+      // ドラッグ終了
+      await page.mouse.up();
     });
   });
 });

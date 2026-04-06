@@ -1,4 +1,4 @@
-import { useDraggable } from "@dnd-kit/core";
+import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { ActionIcon, Group, TextInput } from "@mantine/core";
 import chroma from "chroma-js";
 import { memo, useCallback, useState } from "react";
@@ -31,9 +31,14 @@ function CellPropsView({
     data: { row, col },
   });
 
+  const { active } = useDndContext();
+  const isAnyDragging = active != null;
+
   const [isHovered, setIsHovered] = useState(false);
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
+
+  const showButtons = isHovered && !isAnyDragging;
 
   const propsWithParent = withParentVisualProps(props);
   return (
@@ -48,7 +53,7 @@ function CellPropsView({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {isHovered && (
+      {showButtons && (
         <Group
           gap={2}
           style={{

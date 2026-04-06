@@ -1,4 +1,4 @@
-import { useDroppable } from "@dnd-kit/core";
+import { useDndContext, useDroppable } from "@dnd-kit/core";
 import { ActionIcon } from "@mantine/core";
 import {
   type CSSProperties,
@@ -74,9 +74,14 @@ function DroppableCell({
     data: { row, col },
   });
 
+  const { active } = useDndContext();
+  const isAnyDragging = active != null;
+
   const [isHovered, setIsHovered] = useState(false);
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
+
+  const showButtons = isHovered && !isAnyDragging;
 
   return (
     <td
@@ -92,7 +97,7 @@ function DroppableCell({
       onMouseLeave={handleMouseLeave}
     >
       {children}
-      {isHovered && (
+      {showButtons && (
         <>
           {onInsertLeft && (
             <InsertButton

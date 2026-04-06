@@ -206,13 +206,9 @@ function App() {
       if (!window.confirm("セルを削除しますか？（左に詰める）")) return;
       setCells((prev) => {
         const newCells = deleteCellShiftLeft(prev, targetRow, targetCol, col);
-        let newCol = col;
-        while (newCol > 1 && isColumnEmpty(newCells, newCol - 1)) {
-          newCol--;
-        }
-        if (newCol < col) {
-          setCol(newCol);
-          setColVisuals((prev) => prev.slice(0, newCol));
+        if (col > 1 && isColumnEmpty(newCells, col - 1)) {
+          setCol(col - 1);
+          setColVisuals((prev) => prev.slice(0, col - 1));
         }
         return newCells;
       });
@@ -225,13 +221,9 @@ function App() {
       if (!window.confirm("セルを削除しますか？（上に詰める）")) return;
       setCells((prev) => {
         const newCells = deleteCellShiftUp(prev, targetRow, targetCol);
-        let newRow = row;
-        while (newRow > 1 && isRowEmpty(newCells, newRow - 1)) {
-          newRow--;
-        }
-        if (newRow < row) {
-          setRow(newRow);
-          setRowVisuals((prev) => prev.slice(0, newRow));
+        if (row > 1 && isRowEmpty(newCells, row - 1)) {
+          setRow(row - 1);
+          setRowVisuals((prev) => prev.slice(0, row - 1));
         }
         return newCells;
       });
