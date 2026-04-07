@@ -82,27 +82,24 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     clip(color.a - _Cutout);
                     color = lerp(lerp(color * _DisabledColor, float4(_DisabledColor.rgb * _DisabledColor.a + color.rgb * (1 - _DisabledColor.a), color.a), _DisabledColor.a < 1), color, isOn);
                 #else
+                    // cache all flag values upfront to avoid repeated switch evaluation
+                    uint cachedFlags[MAX_COL];
+                    for (int ci = 0; ci < MAX_COL; ci++) {
+                        cachedFlags[ci] = getTagFlags(ci);
+                    }
+
                     int subAxisMaxActiveSlotCount = 0;
                     int mainAxisActiveSlotCount = 0;
-                    int activeSlotCountBySubAxis[MAX_ROW] = { // max(MAX_COL, MAX_ROW)
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                    };
-                    int mainAxisBySlot[MAX_ROW] = { // max(MAX_COL, MAX_ROW)
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                    };
                     #if _DISPLAY_ALIGN_ROW
+                        // main axis = col (max 8 entries)
+                        int activeSlotCountBySubAxis[MAX_COL] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+                        int mainAxisBySlot[MAX_COL] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
                         // DETECT SLOTS
 
                         // row first
-                        // main axis = col
                         for (int col = 0; col < MAX_COL; col++) {
-                            uint bits = getTagFlags(col);
+                            uint bits = cachedFlags[col];
                             int count = countbits(bits);
                             activeSlotCountBySubAxis[mainAxisActiveSlotCount] = count;
                             subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
@@ -123,20 +120,33 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         int currentCol = mainAxisBySlot[max(mainAxisSlot, 0)];
                         int currentRow = 0;
                         int foundRow = 0;
-                        uint colBits = getTagFlags(currentCol);
+                        uint colBits = cachedFlags[currentCol];
                         for (int row = 0; row < MAX_ROW; row++) {
                             foundRow += (colBits >> row) & 1u;
                             currentRow = lerp(currentRow, row + 1, foundRow == subAxisSlot);
                         }
                     #elif _DISPLAY_ALIGN_COL
+                        // main axis = row (max 32 entries)
+                        int activeSlotCountBySubAxis[MAX_ROW] = {
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                        };
+                        int mainAxisBySlot[MAX_ROW] = {
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                        };
+
                         // DETECT SLOTS
 
                         // col first
-                        // main axis = row
                         for (int row = 0; row < MAX_ROW; row++) {
                             int count = 0;
                             for (int col = 0; col < MAX_COL; col++) {
-                                count += (getTagFlags(col) >> row) & 1u;
+                                count += (cachedFlags[col] >> row) & 1u;
                             }
                             activeSlotCountBySubAxis[mainAxisActiveSlotCount] = count;
                             subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
@@ -156,7 +166,7 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         int currentCol = 0;
                         int foundCol = 0;
                         for (int col = 0; col < MAX_COL; col++) {
-                            foundCol += (getTagFlags(col) >> currentRow) & 1u;
+                            foundCol += (cachedFlags[col] >> currentRow) & 1u;
                             currentCol = lerp(currentCol, col + 1, foundCol == subAxisSlot);
                         }
                     #endif
