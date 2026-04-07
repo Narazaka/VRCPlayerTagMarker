@@ -25,6 +25,8 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.4.0-beta.4:
+  - fix(shader): mipmapを正しく適用するように
 - 0.4.0-beta.3:
   - feat(web): 画像の解像度倍率変更機能
   - feat(web): セルや列の途中挿入・削除機能
