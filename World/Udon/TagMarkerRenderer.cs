@@ -7,28 +7,37 @@ namespace Narazaka.VRChat.TagMarker.World
     {
         [SerializeField] Renderer _renderer;
 
-        int[] tagPropertyIds = new int[TagMarkerConstants.MaxCol * TagMarkerConstants.MaxRow];
+        int[] tagFlagsPropIds;
 
         protected void UpdateRenderer(TagMarkerPlayerState playerState)
         {
+            if (tagFlagsPropIds == null)
+            {
+                tagFlagsPropIds = new int[TagMarkerConstants.MaxCol];
+                for (var col = 0; col < TagMarkerConstants.MaxCol; col++)
+                {
+                    tagFlagsPropIds[col] = TagMarkerConstants.TagFlagsPropertyId(col);
+                }
+            }
+
             var mapLength = playerState._GetMapLength();
             var toggleStates = playerState._GetToggleStatesForRenderer();
-            var materialPropertyBlock = new MaterialPropertyBlock();
+            var tagFlags = new int[TagMarkerConstants.MaxCol];
             for (var i = 0; i < mapLength; i++)
             {
-                var col = playerState._GetCol(i);
-                var row = playerState._GetRow(i);
-                var propId = TagPropertyId(col, row);
-                materialPropertyBlock.SetFloat(propId, toggleStates[i] ? 1f : 0f);
+                if (toggleStates[i])
+                {
+                    var col = playerState._GetCol(i);
+                    var row = playerState._GetRow(i);
+                    tagFlags[col] |= 1 << row;
+                }
+            }
+            var materialPropertyBlock = new MaterialPropertyBlock();
+            for (var col = 0; col < TagMarkerConstants.MaxCol; col++)
+            {
+                materialPropertyBlock.SetInteger(tagFlagsPropIds[col], tagFlags[col]);
             }
             _renderer.SetPropertyBlock(materialPropertyBlock);
-        }
-
-        int TagPropertyId(int col, int row)
-        {
-            var index = col * TagMarkerConstants.MaxRow + row;
-            if (tagPropertyIds[index] != 0) return tagPropertyIds[index];
-            return tagPropertyIds[index] = TagMarkerConstants.TagPropertyId(col, row);
         }
     }
 }
