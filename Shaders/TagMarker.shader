@@ -171,9 +171,12 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         }
                     #endif
 
+                    // UVオフセットがタグ境界で不連続にジャンプするため、tex2Dの自動微分ではミップレベルが誤選択され境界に線が出る
+                    // オフセット前の連続なi.uvから微分値を計算しtex2Dgradで明示指定することで回避
+                    float2 uvDdx = ddx(i.uv);
+                    float2 uvDdy = ddy(i.uv);
                     float2 uv = i.uv + float2(currentCol - currentSlotCol, (currentSlotRow - currentRow)) / float2(_TagDataColCount, _TagDataRowCount);
-                    // mipmap有効にすると境界付近に変な線が出るので暫定対処
-                    fixed4 color = tex2Dlod(_MainTex, float4(uv, 0, 0));
+                    fixed4 color = tex2Dgrad(_MainTex, uv, uvDdx, uvDdy);
 
                     if (color.a < _Cutout || mainAxisSlot < 0 || subAxisSlot < 0 || mainAxisSlot >= mainAxisActiveSlotCount || subAxisSlot >= activeSlotCountBySubAxis[mainAxisSlot]) {
                         discard;
