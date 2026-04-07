@@ -72,79 +72,15 @@ Shader "VRCPlayerTagMarker/TagMarker"
             fixed4 frag (v2f i) : SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(i);
-                
-                /*
-                uint tagCols[MAX_COL] = {
-                    PACK_TAG_COL(0),
-                    PACK_TAG_COL(1),
-                    PACK_TAG_COL(2),
-                    PACK_TAG_COL(3),
-                    PACK_TAG_COL(4),
-                    PACK_TAG_COL(5),
-                    PACK_TAG_COL(6),
-                    PACK_TAG_COL(7),
-                };
 
-                int activeColCount = 0;
-                int activeTagCountByRows[MAX_COL] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-                // [unroll]
-                for (int col = 0; col < MAX_COL; col++) {
-                    uint tagCol = tagCols[col];
-                    activeColCount += tagCol != 0;
-                    activeTagCountByRows[col] =
-                        (tagCol & 0x00000001) != 0 +
-                        (tagCol & 0x00000002) != 0 +
-                        (tagCol & 0x00000004) != 0 +
-                        (tagCol & 0x00000008) != 0 +
-                        (tagCol & 0x00000010) != 0 +
-                        (tagCol & 0x00000020) != 0 +
-                        (tagCol & 0x00000040) != 0 +
-                        (tagCol & 0x00000080) != 0 +
-                        (tagCol & 0x00000100) != 0 +
-                        (tagCol & 0x00000200) != 0 +
-                        (tagCol & 0x00000400) != 0 +
-                        (tagCol & 0x00000800) != 0 +
-                        (tagCol & 0x00001000) != 0 +
-                        (tagCol & 0x00002000) != 0 +
-                        (tagCol & 0x00004000) != 0 +
-                        (tagCol & 0x00008000) != 0 +
-                        (tagCol & 0x00010000) != 0 +
-                        (tagCol & 0x00020000) != 0 +
-                        (tagCol & 0x00040000) != 0 +
-                        (tagCol & 0x00080000) != 0 +
-                        (tagCol & 0x00100000) != 0 +
-                        (tagCol & 0x00200000) != 0 +
-                        (tagCol & 0x00400000) != 0 +
-                        (tagCol & 0x00800000) != 0 +
-                        (tagCol & 0x01000000) != 0 +
-                        (tagCol & 0x02000000) != 0 +
-                        (tagCol & 0x04000000) != 0 +
-                        (tagCol & 0x08000000) != 0 +
-                        (tagCol & 0x10000000) != 0 +
-                        (tagCol & 0x20000000) != 0 +
-                        (tagCol & 0x40000000) != 0 +
-                        (tagCol & 0x80000000) != 0;
-                }
-                */
-
-                bool tagStates[MAX_COL * MAX_ROW] = {
-                    TAG_COL_ARRAY(0),
-                    TAG_COL_ARRAY(1),
-                    TAG_COL_ARRAY(2),
-                    TAG_COL_ARRAY(3),
-                    TAG_COL_ARRAY(4),
-                    TAG_COL_ARRAY(5),
-                    TAG_COL_ARRAY(6),
-                    TAG_COL_ARRAY(7),
-                };
-                
                 #if _DISPLAY_FIXED
                     int col = floor(i.uv.x * _TagDataColCount);
                     int row = floor((1 - i.uv.y) * _TagDataRowCount);
-                    int index = col * MAX_ROW + row;
+                    uint flags = getTagFlags(col);
+                    bool isOn = (flags >> row) & 1u;
                     fixed4 color = tex2D(_MainTex, i.uv);
                     clip(color.a - _Cutout);
-                    color = lerp(lerp(color * _DisabledColor, float4(_DisabledColor.rgb * _DisabledColor.a + color.rgb * (1 - _DisabledColor.a), color.a), _DisabledColor.a < 1), color, tagStates[index]);
+                    color = lerp(lerp(color * _DisabledColor, float4(_DisabledColor.rgb * _DisabledColor.a + color.rgb * (1 - _DisabledColor.a), color.a), _DisabledColor.a < 1), color, isOn);
                 #else
                     int subAxisMaxActiveSlotCount = 0;
                     int mainAxisActiveSlotCount = 0;
@@ -166,13 +102,12 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         // row first
                         // main axis = col
                         for (int col = 0; col < MAX_COL; col++) {
-                            for (int row = 0; row < MAX_ROW; row++) {
-                                int index = col * MAX_ROW + row;
-                                activeSlotCountBySubAxis[mainAxisActiveSlotCount] += tagStates[index] != 0;
-                            }
-                            subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, activeSlotCountBySubAxis[mainAxisActiveSlotCount]);
+                            uint bits = getTagFlags(col);
+                            int count = countbits(bits);
+                            activeSlotCountBySubAxis[mainAxisActiveSlotCount] = count;
+                            subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
                             mainAxisBySlot[mainAxisActiveSlotCount] = col;
-                            mainAxisActiveSlotCount += activeSlotCountBySubAxis[mainAxisActiveSlotCount] != 0;
+                            mainAxisActiveSlotCount += bits != 0;
                         }
                         // col (align center)
                         int mainAxisSlot = floor(i.uv.x * _TagDataColCount - (_TagDataColCount - mainAxisActiveSlotCount) / 2.0);
@@ -186,63 +121,27 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         // MAP
 
                         int currentCol = mainAxisBySlot[max(mainAxisSlot, 0)];
-                        /*
-                        ex.
-                        subAxisSlot = 2 (3rd)
-                        tagStatesInCurrentCol = [0, 1, 1, 0, 1*, 0, 0, 1]
-
-                        breakがない状況
-                        直前indexまではlerpが変更側に倒れるが、マッチするインデックス以降では無視されるので正しく動く
-                    
-                        row = 0:
-                        foundRow = 0 + 0
-                        currentRow = lerp(0, 0 + 1, 0 == 2) => 0
-                        row = 1:
-                        foundRow = 0 + 1
-                        currentRow = lerp(0, 1 + 1, 1 == 2) => 0
-                        row = 2:
-                        foundRow = 1 + 1
-                        currentRow = lerp(0, 2 + 1, 2 == 2) => 3
-                        row = 3:
-                        foundRow = 2 + 0
-                        currentRow = lerp(3, 3 + 1, 2 == 2) => 4
-                        row = 4:
-                        foundRow = 2 + 1
-                        currentRow = lerp(4, 4 + 1, 3 == 2) => 4
-                        */
                         int currentRow = 0;
                         int foundRow = 0;
+                        uint colBits = getTagFlags(currentCol);
                         for (int row = 0; row < MAX_ROW; row++) {
-                            int index = currentCol * MAX_ROW + row;
-                            foundRow += tagStates[index] != 0;
+                            foundRow += (colBits >> row) & 1u;
                             currentRow = lerp(currentRow, row + 1, foundRow == subAxisSlot);
                         }
-                        /*
-                        // normal impl
-                        int currentRow = 0;
-                        int foundRow = -1;
-                        for (int row = 0; row < MAX_ROW; row++) {
-                            int index = currentCol * MAX_ROW + row;
-                            foundRow += tagStates[index] != 0;
-                            if (foundRow == subAxisSlot) {
-                                currentRow = row;
-                                break;
-                            }
-                        }
-                        */
                     #elif _DISPLAY_ALIGN_COL
                         // DETECT SLOTS
 
                         // col first
                         // main axis = row
                         for (int row = 0; row < MAX_ROW; row++) {
+                            int count = 0;
                             for (int col = 0; col < MAX_COL; col++) {
-                                int index = col * MAX_ROW + row;
-                                activeSlotCountBySubAxis[mainAxisActiveSlotCount] += tagStates[index] != 0;
+                                count += (getTagFlags(col) >> row) & 1u;
                             }
-                            subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, activeSlotCountBySubAxis[mainAxisActiveSlotCount]);
+                            activeSlotCountBySubAxis[mainAxisActiveSlotCount] = count;
+                            subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
                             mainAxisBySlot[mainAxisActiveSlotCount] = row;
-                            mainAxisActiveSlotCount += activeSlotCountBySubAxis[mainAxisActiveSlotCount] != 0;
+                            mainAxisActiveSlotCount += count != 0;
                         }
                         // row (items is align top & all region is align bottom)
                         int mainAxisSlot = floor((1 - i.uv.y) * _TagDataRowCount - (_TagDataRowCount - mainAxisActiveSlotCount));
@@ -257,8 +156,7 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         int currentCol = 0;
                         int foundCol = 0;
                         for (int col = 0; col < MAX_COL; col++) {
-                            int index = col * MAX_ROW + currentRow;
-                            foundCol += tagStates[index] != 0;
+                            foundCol += (getTagFlags(col) >> currentRow) & 1u;
                             currentCol = lerp(currentCol, col + 1, foundCol == subAxisSlot);
                         }
                     #endif
