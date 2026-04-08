@@ -8,6 +8,7 @@ Shader "VRCPlayerTagMarker/TagMarker"
         [Header(Tag Data Setting)][Space]
         _TagDataColCount ("Tag Data Column Count (max 16)", Int) = 1
         _TagDataRowCount ("Tag Data Row Count (max 32)", Int) = 8
+        [KeywordEnum(L8x32, L16x16, L16x32)] _TAG_LAYOUT ("Tag Max Grid Size", Int) = 0
         [Header(Tag Show Setting)][Space]
         [Toggle(VR_BILLBOARD_ENABLE_BILLBOARD)] _Billboard ("Billboard shader", Float) = 1
         [KeywordEnum(FIXED, ALIGN_ROW, ALIGN_COL)] _DISPLAY ("Display mode", Int) = 1
@@ -23,7 +24,7 @@ Shader "VRCPlayerTagMarker/TagMarker"
             #pragma multi_compile _DISPLAY_FIXED _DISPLAY_ALIGN_ROW _DISPLAY_ALIGN_COL
             #pragma multi_compile _ VR_BILLBOARD_ENABLE_BILLBOARD
             #pragma target 3.5
-            #pragma shader_feature TAG_LAYOUT_8x32 TAG_LAYOUT_16x16 TAG_LAYOUT_16x32
+            #pragma shader_feature _TAG_LAYOUT_L8X32 _TAG_LAYOUT_L16X16 _TAG_LAYOUT_L16X32
 
             #pragma fragment frag
 
@@ -48,7 +49,7 @@ Shader "VRCPlayerTagMarker/TagMarker"
                 UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_5)
                 UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_6)
                 UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_7)
-                #if defined(TAG_LAYOUT_16x16) || defined(TAG_LAYOUT_16x32)
+                #if defined(_TAG_LAYOUT_L16X16) || defined(_TAG_LAYOUT_L16X32)
                 UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_8)
                 UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_9)
                 UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_10)
@@ -70,7 +71,7 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     case 5: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_5);
                     case 6: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_6);
                     case 7: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_7);
-                    #if defined(TAG_LAYOUT_16x16) || defined(TAG_LAYOUT_16x32)
+                    #if defined(_TAG_LAYOUT_L16X16) || defined(_TAG_LAYOUT_L16X32)
                     case 8: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_8);
                     case 9: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_9);
                     case 10: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_10);
@@ -87,13 +88,13 @@ Shader "VRCPlayerTagMarker/TagMarker"
             #define VR_BILLBOARD_DISABLE_BILLBOARD
             #include "./VRBillboard.cginc"
 
-            #if defined(TAG_LAYOUT_16x32)
+            #if defined(_TAG_LAYOUT_L16X32)
                 #define MAX_COL 16
                 #define MAX_ROW 32
-            #elif defined(TAG_LAYOUT_16x16)
+            #elif defined(_TAG_LAYOUT_L16X16)
                 #define MAX_COL 16
                 #define MAX_ROW 16
-            #else // TAG_LAYOUT_8x32 (default)
+            #else // _TAG_LAYOUT_L8X32 (default)
                 #define MAX_COL 8
                 #define MAX_ROW 32
             #endif

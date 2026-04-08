@@ -197,7 +197,7 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             onBase.SetFloat("_TagDataColCount", data.col);
             onBase.SetFloat("_TagDataRowCount", data.row);
             var layoutKeyword = GetLayoutKeyword(data.col, data.row);
-            foreach (var kw in new[] { "TAG_LAYOUT_8x32", "TAG_LAYOUT_16x16", "TAG_LAYOUT_16x32" })
+            foreach (var kw in new[] { "_TAG_LAYOUT_L8X32", "_TAG_LAYOUT_L16X16", "_TAG_LAYOUT_L16X32" })
             {
                 var localKw = new UnityEngine.Rendering.LocalKeyword(shader, kw);
                 onBase.SetKeyword(localKw, kw == layoutKeyword);
@@ -326,9 +326,9 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
 
         internal static string GetLayoutKeyword(int col, int row)
         {
-            if (col <= 8) return "TAG_LAYOUT_8x32";
-            if (row <= 16) return "TAG_LAYOUT_16x16";
-            return "TAG_LAYOUT_16x32";
+            if (col <= 8) return "_TAG_LAYOUT_L8X32";
+            if (row <= 16) return "_TAG_LAYOUT_L16X16";
+            return "_TAG_LAYOUT_L16X32";
         }
 
         internal static void BuildMappingTables(
