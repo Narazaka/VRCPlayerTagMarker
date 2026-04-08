@@ -99,8 +99,9 @@ namespace Narazaka.VRChat.TagMarker.World
             for (var i = 0; i < toggleStates.Length; i++)
             {
                 if (!toggleStates[i]) continue;
-                var oldCol = i / TagMarkerConstants.MaxRow;
-                var oldRow = i % TagMarkerConstants.MaxRow;
+                const int v0MaxRow = 32;
+                var oldCol = i / v0MaxRow;
+                var oldRow = i % v0MaxRow;
                 for (var j = 0; j < mapCellIds.Length; j++)
                 {
                     if (mapColPositions[j] == oldCol && mapRowPositions[j] == oldRow)
