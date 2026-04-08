@@ -50,6 +50,37 @@ describe("assignCellIds", () => {
     expect(result.maxCellId).toBe(50);
   });
 
+  it("空のcells配列でもエラーにならない", () => {
+    const cells: (ReturnType<typeof assignCellIds>["cells"][number][number])[][] = [];
+    const result = assignCellIds(cells, 0);
+    expect(result.cells).toEqual([]);
+    expect(result.maxCellId).toBe(0);
+  });
+
+  it("行がundefinedの配列でもエラーにならない", () => {
+    // spreadでempty slotsがundefinedに変換された場合
+    const cells = [undefined, undefined, [{ text: "third" }]] as (ReturnType<typeof assignCellIds>["cells"][number])[];
+
+    const result = assignCellIds(cells, 0);
+    expect(result.cells[0]).toEqual([]);
+    expect(result.cells[1]).toEqual([]);
+    expect(result.cells[2][0]?.cellId).toBe(1);
+    expect(result.maxCellId).toBe(1);
+  });
+
+  it("sparse配列（empty slots）でもエラーにならない", () => {
+    // 1文字目入力後のcells状態: empty slots + 実データ
+    const cells: (ReturnType<typeof assignCellIds>["cells"][number])[] = [];
+    cells[2] = [{ text: "sparse" }];
+    // cells[0], cells[1] are empty slots (not undefined)
+
+    const result = assignCellIds(cells, 0);
+    expect(result.cells[0]).toEqual([]);
+    expect(result.cells[1]).toEqual([]);
+    expect(result.cells[2][0]?.cellId).toBe(1);
+    expect(result.maxCellId).toBe(1);
+  });
+
   it("既存IDと新規IDが混在する場合", () => {
     const cells = [[{ text: "existing", cellId: 5 }, { text: "new" }]];
     const result = assignCellIds(cells, 5);

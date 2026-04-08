@@ -5,8 +5,8 @@ export function assignCellIds(
   maxCellId: number,
 ): { cells: (CellProps | undefined)[][]; maxCellId: number } {
   let nextId = maxCellId;
-  const newCells = cells.map((row) =>
-    row.map((cell) => {
+  const newCells = Array.from(cells, (row) =>
+    (row ?? []).map((cell) => {
       if (!cell?.text) {
         if (cell?.cellId != null) {
           const { cellId: _, ...rest } = cell;
