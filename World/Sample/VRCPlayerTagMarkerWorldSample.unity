@@ -673,6 +673,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ToggleStateSender_1_4
       objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
       propertyPath: m_Pivot.x
@@ -818,6 +823,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ToggleStateSender_2_3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
@@ -1102,6 +1112,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ToggleStateSender_0_2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
@@ -1783,6 +1798,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ToggleStateSender_0_3
       objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
       propertyPath: m_Pivot.x
@@ -1923,6 +1943,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ToggleStateSender_2_0
       objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
       propertyPath: m_Pivot.x
@@ -2062,6 +2087,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ToggleStateSender_0_0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
@@ -2318,6 +2348,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ToggleStateSender_1_2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
@@ -2657,6 +2692,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ToggleStateSender_2_4
       objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
       propertyPath: m_Pivot.x
@@ -2797,6 +2837,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ToggleStateSender_1_3
       objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
       propertyPath: m_Pivot.x
@@ -2936,6 +2981,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ToggleStateSender_0_4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
@@ -3239,6 +3289,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ToggleStateSender_2_2
       objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
       propertyPath: m_Pivot.x
@@ -3479,6 +3534,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ToggleStateSender_2_1
       objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
       propertyPath: m_Pivot.x
@@ -3625,6 +3685,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ToggleStateSender_1_1
       objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
       propertyPath: m_Pivot.x
@@ -3765,6 +3830,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ToggleStateSender_1_0
       objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
       propertyPath: m_Pivot.x
@@ -3904,6 +3974,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ToggleStateSender_0_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7751456807843401356, guid: af2ca7e7db49ba545afa382b0baa5e78,
+        type: 3}
+      propertyPath: _syncMethod
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8661285763437232282, guid: af2ca7e7db49ba545afa382b0baa5e78,
         type: 3}
