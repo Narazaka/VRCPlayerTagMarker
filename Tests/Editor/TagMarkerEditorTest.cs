@@ -41,5 +41,28 @@ namespace Narazaka.VRChat.TagMarker.Tests.Editor
             Assert.AreEqual(0, mapColPositions.Length);
             Assert.AreEqual(0, mapRowPositions.Length);
         }
+
+        [Test]
+        public void GetLayoutKeyword_8列以下は8x32()
+        {
+            Assert.AreEqual("TAG_LAYOUT_8x32", TagMarkerEditor.GetLayoutKeyword(1, 4));
+            Assert.AreEqual("TAG_LAYOUT_8x32", TagMarkerEditor.GetLayoutKeyword(8, 32));
+            Assert.AreEqual("TAG_LAYOUT_8x32", TagMarkerEditor.GetLayoutKeyword(8, 16));
+        }
+
+        [Test]
+        public void GetLayoutKeyword_16列以下かつ16行以下は16x16()
+        {
+            Assert.AreEqual("TAG_LAYOUT_16x16", TagMarkerEditor.GetLayoutKeyword(9, 16));
+            Assert.AreEqual("TAG_LAYOUT_16x16", TagMarkerEditor.GetLayoutKeyword(16, 16));
+            Assert.AreEqual("TAG_LAYOUT_16x16", TagMarkerEditor.GetLayoutKeyword(16, 1));
+        }
+
+        [Test]
+        public void GetLayoutKeyword_16列以下かつ17行以上は16x32()
+        {
+            Assert.AreEqual("TAG_LAYOUT_16x32", TagMarkerEditor.GetLayoutKeyword(9, 17));
+            Assert.AreEqual("TAG_LAYOUT_16x32", TagMarkerEditor.GetLayoutKeyword(16, 32));
+        }
     }
 }
