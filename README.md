@@ -25,6 +25,21 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.4.0:
+  - feat: タグの移動に対応（png形式が変わるので一回pngをWebにインポートして再ダウンロードが必要です）
+  - feat: フォントサイズ基準のサイズ計算
+  - feat(web): 画像の解像度倍率変更機能
+  - fix(shader): シェーダー最適化
+  - fix(shader): mipmapを正しく適用するように
+  - fix(shader): D3D11コンパイルエラー修正
+  - feat(shader): 16x32グリッドまでサポートするように
+  - (破壊的変更) TagMarkerUI自体がスケールされてしまって、ユーザーでのカスタムスケーリングと競合していた問題を修正。
+    - 新たにAspectRatioという親オブジェクトを作り、そちらをスケールするようにした。
+    - 再Setup時にはTagMarkerUIの手動でのスケール変更（アスペクト比を1:1にする）が必要です。
+  - (破壊的変更) TagMarkerViewOnPlayerがタグスケールによってかぶる調整問題を修正。
+    - 新たにOffsetという親オブジェクトを作った。
+    - タグ下端が一定になるようレンダラーのy位置を調整するようにした。
+    - 再Setup時にはOffsetの手動でのy変更が必要な可能性があります。
 - 0.4.0-beta.5:
   - feat(shader): 16x32グリッドまでサポートするように
 - 0.4.0-beta.4:
