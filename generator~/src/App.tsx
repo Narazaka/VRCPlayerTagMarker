@@ -578,7 +578,12 @@ function App() {
                 // biome-ignore lint/suspicious/noArrayIndexKey: no id
                 <tr key={rowIndex}>
                   <th style={cellStyle}>
-                    <Group justify="space-between" align="center" gap={0} wrap="nowrap">
+                    <Group
+                      justify="space-between"
+                      align="center"
+                      gap={0}
+                      wrap="nowrap"
+                    >
                       <VisualPropsView
                         props={rowVisuals[rowIndex]}
                         setProps={setRowVisual[rowIndex]}
