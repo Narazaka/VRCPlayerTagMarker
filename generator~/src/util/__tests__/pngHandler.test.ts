@@ -98,6 +98,27 @@ describe("loadPngDataFromBlob", () => {
     expect(result!.maxCellId).toBe(42);
   });
 
+  it("行がnullの場合でもクラッシュしない", async () => {
+    const data = {
+      version: 2,
+      col: 1,
+      row: 2,
+      cellWidth: 256,
+      cellHeight: 64,
+      spacing: 6,
+      baseVisual: defaultVisualProps,
+      colVisuals: [],
+      rowVisuals: [],
+      cells: [null, [{ text: "hello", cellId: 1 }]],
+      maxCellId: 1,
+    };
+    const blob = createPngBlob(data);
+    const result = await loadPngDataFromBlob(blob);
+    expect(result).toBeDefined();
+    expect(result!.cells[0]).toEqual([]);
+    expect(result!.cells[1][0]?.text).toBe("hello");
+  });
+
   it("出力のversionが常に2になる", async () => {
     const v1Data = {
       version: 1,

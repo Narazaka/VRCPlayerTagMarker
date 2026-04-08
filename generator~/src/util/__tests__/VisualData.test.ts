@@ -58,6 +58,55 @@ describe("toUnityVisualData", () => {
   });
 });
 
+describe("toUnityVisualData — sparse cells", () => {
+  it("行がundefinedの場合でもクラッシュしない", () => {
+    const data: VisualData = {
+      version: 2,
+      col: 2,
+      row: 3,
+      cellWidth: 256,
+      cellHeight: 64,
+      spacing: 6,
+      baseVisual: defaultVisualProps,
+      colVisuals: [],
+      rowVisuals: [],
+      cells: [
+        undefined,
+        undefined,
+        [{ text: "a", cellId: 1 }, undefined],
+      ] as VisualData["cells"],
+      maxCellId: 1,
+    };
+    const result = toUnityVisualData(data);
+    expect(result.cells).toHaveLength(2);
+    expect(result.cells[0].text).toBe("a");
+    expect(result.cells[0].cellId).toBe(1);
+    expect(result.cells[0].row).toBe(2);
+    expect(result.cells[0].col).toBe(0);
+    expect(result.cells[1].text).toBe("");
+    expect(result.cells[1].row).toBe(2);
+    expect(result.cells[1].col).toBe(1);
+  });
+
+  it("cells が空配列でもクラッシュしない", () => {
+    const data: VisualData = {
+      version: 2,
+      col: 1,
+      row: 0,
+      cellWidth: 256,
+      cellHeight: 64,
+      spacing: 6,
+      baseVisual: defaultVisualProps,
+      colVisuals: [],
+      rowVisuals: [],
+      cells: [],
+      maxCellId: 0,
+    };
+    const result = toUnityVisualData(data);
+    expect(result.cells).toHaveLength(0);
+  });
+});
+
 describe("fromUnityCellProps", () => {
   it("cellIdが復元される", () => {
     const unity = toUnityCellProps(1, 2, { text: "hello", cellId: 42 });

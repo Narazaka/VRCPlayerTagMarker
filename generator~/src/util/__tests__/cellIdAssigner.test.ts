@@ -51,7 +51,8 @@ describe("assignCellIds", () => {
   });
 
   it("空のcells配列でもエラーにならない", () => {
-    const cells: (ReturnType<typeof assignCellIds>["cells"][number][number])[][] = [];
+    const cells: ReturnType<typeof assignCellIds>["cells"][number][number][][] =
+      [];
     const result = assignCellIds(cells, 0);
     expect(result.cells).toEqual([]);
     expect(result.maxCellId).toBe(0);
@@ -59,7 +60,9 @@ describe("assignCellIds", () => {
 
   it("行がundefinedの配列でもエラーにならない", () => {
     // spreadでempty slotsがundefinedに変換された場合
-    const cells = [undefined, undefined, [{ text: "third" }]] as (ReturnType<typeof assignCellIds>["cells"][number])[];
+    const cells = [undefined, undefined, [{ text: "third" }]] as ReturnType<
+      typeof assignCellIds
+    >["cells"][number][];
 
     const result = assignCellIds(cells, 0);
     expect(result.cells[0]).toEqual([]);
@@ -70,7 +73,7 @@ describe("assignCellIds", () => {
 
   it("sparse配列（empty slots）でもエラーにならない", () => {
     // 1文字目入力後のcells状態: empty slots + 実データ
-    const cells: (ReturnType<typeof assignCellIds>["cells"][number])[] = [];
+    const cells: ReturnType<typeof assignCellIds>["cells"][number][] = [];
     cells[2] = [{ text: "sparse" }];
     // cells[0], cells[1] are empty slots (not undefined)
 

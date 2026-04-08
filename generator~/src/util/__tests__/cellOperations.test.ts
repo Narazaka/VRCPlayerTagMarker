@@ -370,6 +370,38 @@ describe("insertCellShiftDown", () => {
   });
 });
 
+describe("sparse cells の安全性", () => {
+  it("insertColumnCells — undefined行でもクラッシュしない", () => {
+    const cells = [
+      undefined,
+      [{ text: "A" }],
+    ] as typeof insertColumnCells extends (
+      c: infer C,
+      ...args: unknown[]
+    ) => unknown
+      ? C
+      : never;
+    const result = insertColumnCells(cells, 0);
+    expect(result[0]).toEqual([undefined]);
+    expect(result[1][0]?.text).toBe("A");
+  });
+
+  it("deleteColumnCells — undefined行でもクラッシュしない", () => {
+    const cells = [
+      undefined,
+      [{ text: "A" }, { text: "B" }],
+    ] as typeof deleteColumnCells extends (
+      c: infer C,
+      ...args: unknown[]
+    ) => unknown
+      ? C
+      : never;
+    const result = deleteColumnCells(cells, 0);
+    expect(result[0]).toEqual([]);
+    expect(result[1][0]?.text).toBe("B");
+  });
+});
+
 describe("insertColumnCells", () => {
   it("中央に列を挿入", () => {
     const cells = [

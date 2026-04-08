@@ -126,9 +126,11 @@ export function toUnityVisualData(data: VisualData): UnityVisualData {
     baseVisual: data.baseVisual,
     colVisuals: data.colVisuals.map(toUnityPartialVisualProps),
     rowVisuals: data.rowVisuals.map(toUnityPartialVisualProps),
-    cells: data.cells.flatMap((col, rowIndex) =>
-      col.map((cell, colIndex) => toUnityCellProps(colIndex, rowIndex, cell)),
-    ),
+    cells: Array.from(data.cells, (col, rowIndex) =>
+      (col ?? []).map((cell, colIndex) =>
+        toUnityCellProps(colIndex, rowIndex, cell),
+      ),
+    ).flat(),
     maxCellId: data.maxCellId ?? 0,
   };
 }

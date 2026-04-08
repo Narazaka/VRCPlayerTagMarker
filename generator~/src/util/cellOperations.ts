@@ -145,8 +145,8 @@ export function insertColumnCells(
   cells: (CellProps | undefined)[][],
   afterColIndex: number,
 ): (CellProps | undefined)[][] {
-  return cells.map((row) => {
-    const newRow = [...row];
+  return Array.from(cells, (row) => {
+    const newRow = [...(row ?? [])];
     newRow.splice(afterColIndex + 1, 0, undefined);
     return newRow;
   });
@@ -165,8 +165,8 @@ export function deleteColumnCells(
   cells: (CellProps | undefined)[][],
   colIndex: number,
 ): (CellProps | undefined)[][] {
-  return cells.map((row) => {
-    const newRow = [...row];
+  return Array.from(cells, (row) => {
+    const newRow = [...(row ?? [])];
     newRow.splice(colIndex, 1);
     return newRow;
   });
