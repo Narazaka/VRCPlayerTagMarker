@@ -176,6 +176,12 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
 
         void Setup()
         {
+            if (data.col > 16 || data.row > 32)
+            {
+                EditorUtility.DisplayDialog("TagMarker", $"サポートされないグリッドサイズです: {data.col}x{data.row}\n最大16列×32行まで対応しています。", "OK");
+                return;
+            }
+
             var tex = texture.objectReferenceValue as Texture2D;
             var textureImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(tex)) as TextureImporter;
             if (!textureImporter.alphaIsTransparency)
@@ -190,6 +196,12 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
             onBase.SetTexture("_MainTex", tex);
             onBase.SetFloat("_TagDataColCount", data.col);
             onBase.SetFloat("_TagDataRowCount", data.row);
+            var layoutKeyword = GetLayoutKeyword(data.col, data.row);
+            foreach (var kw in new[] { "TAG_LAYOUT_8x32", "TAG_LAYOUT_16x16", "TAG_LAYOUT_16x32" })
+            {
+                var localKw = new UnityEngine.Rendering.LocalKeyword(shader, kw);
+                onBase.SetKeyword(localKw, kw == layoutKeyword);
+            }
             onBase.SetFloat("_Billboard", 0);
             onBase.SetKeyword(new UnityEngine.Rendering.LocalKeyword(shader, "VR_BILLBOARD_ENABLE_BILLBOARD"), false);
             onBase.enableInstancing = true;
@@ -310,6 +322,13 @@ namespace Narazaka.VRChat.TagMarker.World.Editor
                     Undo.RegisterCreatedObjectUndo(buttonsCol, "Create ToggleStateSenders");
                 }
             }
+        }
+
+        internal static string GetLayoutKeyword(int col, int row)
+        {
+            if (col <= 8) return "TAG_LAYOUT_8x32";
+            if (row <= 16) return "TAG_LAYOUT_16x16";
+            return "TAG_LAYOUT_16x32";
         }
 
         internal static void BuildMappingTables(
