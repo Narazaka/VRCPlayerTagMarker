@@ -6,7 +6,7 @@ Shader "VRCPlayerTagMarker/TagMarker"
         _Cutout ("Cutout Threshold", Range(0, 1)) = 0.5
         _DisabledColor ("Disabled Color (for fixed | a=1 -> multiply | a<1 -> alphablend)", Color) = (0.5, 0.5, 0.5, 1)
         [Header(Tag Data Setting)][Space]
-        _TagDataColCount ("Tag Data Column Count (max 8)", Int) = 1
+        _TagDataColCount ("Tag Data Column Count (max 16)", Int) = 1
         _TagDataRowCount ("Tag Data Row Count (max 32)", Int) = 8
         [Header(Tag Show Setting)][Space]
         [Toggle(VR_BILLBOARD_ENABLE_BILLBOARD)] _Billboard ("Billboard shader", Float) = 1
@@ -23,6 +23,7 @@ Shader "VRCPlayerTagMarker/TagMarker"
             #pragma multi_compile _DISPLAY_FIXED _DISPLAY_ALIGN_ROW _DISPLAY_ALIGN_COL
             #pragma multi_compile _ VR_BILLBOARD_ENABLE_BILLBOARD
             #pragma target 3.5
+            #pragma shader_feature TAG_LAYOUT_8x32 TAG_LAYOUT_16x16 TAG_LAYOUT_16x32
 
             #pragma fragment frag
 
@@ -47,6 +48,16 @@ Shader "VRCPlayerTagMarker/TagMarker"
                 UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_5)
                 UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_6)
                 UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_7)
+                #if defined(TAG_LAYOUT_16x16) || defined(TAG_LAYOUT_16x32)
+                UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_8)
+                UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_9)
+                UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_10)
+                UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_11)
+                UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_12)
+                UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_13)
+                UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_14)
+                UNITY_DEFINE_INSTANCED_PROP(uint, _TagFlags_15)
+                #endif
             UNITY_INSTANCING_BUFFER_END(Props)
 
             uint getTagFlags(int col) {
@@ -59,6 +70,16 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     case 5: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_5);
                     case 6: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_6);
                     case 7: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_7);
+                    #if defined(TAG_LAYOUT_16x16) || defined(TAG_LAYOUT_16x32)
+                    case 8: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_8);
+                    case 9: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_9);
+                    case 10: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_10);
+                    case 11: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_11);
+                    case 12: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_12);
+                    case 13: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_13);
+                    case 14: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_14);
+                    case 15: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_15);
+                    #endif
                     default: return 0;
                 }
             }
@@ -66,8 +87,16 @@ Shader "VRCPlayerTagMarker/TagMarker"
             #define VR_BILLBOARD_DISABLE_BILLBOARD
             #include "./VRBillboard.cginc"
 
-            #define MAX_ROW 32
-            #define MAX_COL 8
+            #if defined(TAG_LAYOUT_16x32)
+                #define MAX_COL 16
+                #define MAX_ROW 32
+            #elif defined(TAG_LAYOUT_16x16)
+                #define MAX_COL 16
+                #define MAX_ROW 16
+            #else // TAG_LAYOUT_8x32 (default)
+                #define MAX_COL 8
+                #define MAX_ROW 32
+            #endif
 
             fixed4 frag (v2f i) : SV_Target
             {
@@ -91,9 +120,13 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     int subAxisMaxActiveSlotCount = 0;
                     int mainAxisActiveSlotCount = 0;
                     #if _DISPLAY_ALIGN_ROW
-                        // main axis = col (max 8 entries)
-                        int activeSlotCountBySubAxis[MAX_COL] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-                        int mainAxisBySlot[MAX_COL] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+                        // main axis = col
+                        int activeSlotCountBySubAxis[MAX_COL];
+                        int mainAxisBySlot[MAX_COL];
+                        [unroll] for (int initIdx = 0; initIdx < MAX_COL; initIdx++) {
+                            activeSlotCountBySubAxis[initIdx] = 0;
+                            mainAxisBySlot[initIdx] = 0;
+                        }
 
                         // DETECT SLOTS
 
@@ -126,19 +159,13 @@ Shader "VRCPlayerTagMarker/TagMarker"
                             currentRow = lerp(currentRow, row + 1, foundRow == subAxisSlot);
                         }
                     #elif _DISPLAY_ALIGN_COL
-                        // main axis = row (max 32 entries)
-                        int activeSlotCountBySubAxis[MAX_ROW] = {
-                            0, 0, 0, 0, 0, 0, 0, 0,
-                            0, 0, 0, 0, 0, 0, 0, 0,
-                            0, 0, 0, 0, 0, 0, 0, 0,
-                            0, 0, 0, 0, 0, 0, 0, 0,
-                        };
-                        int mainAxisBySlot[MAX_ROW] = {
-                            0, 0, 0, 0, 0, 0, 0, 0,
-                            0, 0, 0, 0, 0, 0, 0, 0,
-                            0, 0, 0, 0, 0, 0, 0, 0,
-                            0, 0, 0, 0, 0, 0, 0, 0,
-                        };
+                        // main axis = row
+                        int activeSlotCountBySubAxis[MAX_ROW];
+                        int mainAxisBySlot[MAX_ROW];
+                        [unroll] for (int initIdx = 0; initIdx < MAX_ROW; initIdx++) {
+                            activeSlotCountBySubAxis[initIdx] = 0;
+                            mainAxisBySlot[initIdx] = 0;
+                        }
 
                         // DETECT SLOTS
 
