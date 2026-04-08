@@ -462,7 +462,7 @@ function App() {
               onChange={(e) => setCol(Number(e))}
               label="横の要素数"
               min={1}
-              max={8}
+              max={16}
             />
           </Grid.Col>
           <Grid.Col span={1}>
