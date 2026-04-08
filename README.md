@@ -25,6 +25,8 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.4.0-beta.5:
+  - feat(shader): 16x32グリッドまでサポートするように
 - 0.4.0-beta.4:
   - fix(shader): mipmapを正しく適用するように
 - 0.4.0-beta.3:
