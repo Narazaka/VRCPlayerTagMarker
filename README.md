@@ -25,6 +25,8 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.4.1:
+  - fix(shader): ミラーで反転表示するように（文字が読めるように）
 - 0.4.0:
   - feat: タグの移動に対応（png形式が変わるので一回pngをWebにインポートして再ダウンロードが必要です）
   - feat: フォントサイズ基準のサイズ計算
