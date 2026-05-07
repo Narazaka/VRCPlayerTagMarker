@@ -16,6 +16,10 @@
 /// #define VR_BILLBOARD_MAIN_TEX _MainTex
 /// // optional: default=v2f
 /// #define VR_BILLBOARD_VERT_TO_FRAG v2f
+/// // optional: disable mirror flip (default: enabled)
+/// #define VR_BILLBOARD_DISABLE_MIRRORFLIP
+/// // optional: enable mirror flip (is stronger than disable)
+/// #define VR_BILLBOARD_ENABLE_MIRRORFLIP
 /// // optional: disable billboard (normal shader)
 /// #define VR_BILLBOARD_DISABLE_BILLBOARD
 /// // optional: enable billboard (is stronger than disable)
@@ -40,6 +44,24 @@
 #endif
 #ifndef VR_BILLBOARD_VERT_TO_FRAG
 #define VR_BILLBOARD_VERT_TO_FRAG v2f
+#endif
+
+#if !defined(VR_BILLBOARD_DISABLE_MIRRORFLIP) || defined(VR_BILLBOARD_ENABLE_MIRRORFLIP)
+float _VRChatMirrorMode;
+float CVRRenderingCam;
+
+inline bool isMirror() {
+    return _VRChatMirrorMode > 0 || CVRRenderingCam == 2;
+}
+
+inline float2 mirrorFlip(float2 uv) {
+    uv.x = lerp(uv.x, 1.0 - uv.x, isMirror());
+    return uv;
+}
+
+#define VR_BILLBOARD_MIRRORFLIP(uv) mirrorFlip(uv)
+#else
+#define VR_BILLBOARD_MIRRORFLIP(uv) (uv)
 #endif
 
 #define VR_BILLBOARD_FRAG_BEGIN(name) UNITY_SETUP_INSTANCE_ID(name);
@@ -74,7 +96,7 @@ VR_BILLBOARD_VERT_TO_FRAG vert (appdata v)
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
     UNITY_TRANSFER_INSTANCE_ID(v, o);
     o.vertex = UnityObjectToClipPos(v.vertex);
-    o.uv = TRANSFORM_TEX(v.uv, VR_BILLBOARD_MAIN_TEX);
+    o.uv = VR_BILLBOARD_MIRRORFLIP(TRANSFORM_TEX(v.uv, VR_BILLBOARD_MAIN_TEX));
     UNITY_TRANSFER_FOG(o, o.vertex);
     return o;
 }
@@ -107,7 +129,7 @@ VR_BILLBOARD_VERT_TO_FRAG vert (appdata v)
     float4 worldPos = float4(vertexPos + rootPos, 1);
 
     o.vertex = mul(UNITY_MATRIX_VP, worldPos);
-    o.uv = TRANSFORM_TEX(v.uv, VR_BILLBOARD_MAIN_TEX);
+    o.uv = VR_BILLBOARD_MIRRORFLIP(TRANSFORM_TEX(v.uv, VR_BILLBOARD_MAIN_TEX));
     UNITY_TRANSFER_FOG(o, o.vertex);
     return o;
 }
