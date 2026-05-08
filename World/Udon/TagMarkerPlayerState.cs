@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System;
 using System.Runtime.CompilerServices;
 using UdonSharp;
@@ -127,6 +128,7 @@ namespace Narazaka.VRChat.TagMarker.World
             RequestSerialization();
         }
 
+        [PublicAPI]
         public void _AddListener(IUdonEventReceiver listener)
         {
             var len = _listeners.Length;
