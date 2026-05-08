@@ -2,6 +2,7 @@ using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
+using VRC.Udon.Common.Interfaces;
 
 namespace Narazaka.VRChat.TagMarker.World
 {
@@ -9,7 +10,7 @@ namespace Narazaka.VRChat.TagMarker.World
     {
         protected abstract TagMarkerPlayerState tagMarkerPlayerState { get; }
 
-        public void _UpdateRenderer()
+        public void _OnTagMarkerPlayerStateUpdated()
         {
             UpdateRenderer(tagMarkerPlayerState);
         }
@@ -19,7 +20,7 @@ namespace Narazaka.VRChat.TagMarker.World
             if (Networking.IsOwner(player, tagMarkerPlayerState.gameObject))
             {
                 tagMarkerPlayerState._MigrateFromV0();
-                tagMarkerPlayerState._AddListener(this);
+                tagMarkerPlayerState._AddListener((IUdonEventReceiver)this);
             }
         }
     }

@@ -4,6 +4,7 @@ using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
+using VRC.Udon.Common.Interfaces;
 
 [assembly: InternalsVisibleTo("Narazaka.VRChat.TagMarker.Tests.Udon")]
 
@@ -23,7 +24,7 @@ namespace Narazaka.VRChat.TagMarker.World
         [SerializeField] ushort[] mapCellIds;
         [SerializeField] bool skipMigration;
 
-        TagMarkerStateRenderer[] _listeners = new TagMarkerStateRenderer[0];
+        IUdonEventReceiver[] _listeners = new IUdonEventReceiver[0];
 
         public void _ToggleState(ushort cellId)
         {
@@ -45,7 +46,7 @@ namespace Narazaka.VRChat.TagMarker.World
                 selectedCellIds = newIds;
             }
             RequestSerialization();
-            UpdateRenderer();
+            OnTagMarkerPlayerStateUpdated();
         }
 
         public bool[] _GetToggleStatesForRenderer()
@@ -126,30 +127,30 @@ namespace Narazaka.VRChat.TagMarker.World
             RequestSerialization();
         }
 
-        public void _AddListener(TagMarkerStateRenderer listener)
+        public void _AddListener(IUdonEventReceiver listener)
         {
             var len = _listeners.Length;
             for (var i = 0; i < len; i++)
             {
                 if (_listeners[i] == listener) return;
             }
-            var newListeners = new TagMarkerStateRenderer[len + 1];
+            var newListeners = new IUdonEventReceiver[len + 1];
             Array.Copy(_listeners, newListeners, len);
             newListeners[len] = listener;
             _listeners = newListeners;
-            listener._UpdateRenderer();
+            listener.SendCustomEvent(nameof(TagMarkerRendererEventReceiver._OnTagMarkerPlayerStateUpdated));
         }
 
         public override void OnDeserialization()
         {
-            UpdateRenderer();
+            OnTagMarkerPlayerStateUpdated();
         }
 
-        void UpdateRenderer()
+        void OnTagMarkerPlayerStateUpdated()
         {
             foreach (var listener in _listeners)
             {
-                listener._UpdateRenderer();
+                listener.SendCustomEvent(nameof(TagMarkerRendererEventReceiver._OnTagMarkerPlayerStateUpdated));
             }
         }
     }
