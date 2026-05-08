@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "v*"
+      - 'v*'
 
 permissions:
   contents: write
@@ -24,7 +24,7 @@ jobs:
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 
   build:
-    needs: [web-test]
+    needs: [web-test, unity-test]
     uses: Narazaka/vpm-repos/.github/workflows/release.yml@main
     with:
       novcc: false
