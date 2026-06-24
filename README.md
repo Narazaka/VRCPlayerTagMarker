@@ -25,6 +25,8 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.4.2:
+  - タグの表示部分をデフォルトでUIレイヤーに（カメラに標準で写らないように）
 - 0.4.1:
   - fix(shader): ミラーで反転表示するように（文字が読めるように）
 - 0.4.0:
