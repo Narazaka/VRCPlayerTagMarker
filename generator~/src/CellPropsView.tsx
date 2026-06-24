@@ -1,8 +1,13 @@
 import { useDndContext, useDraggable } from "@dnd-kit/core";
-import { ActionIcon, Group, TextInput } from "@mantine/core";
+import { ActionIcon, Button, Group, TextInput, Tooltip } from "@mantine/core";
 import chroma from "chroma-js";
-import { memo, useCallback, useState } from "react";
-import { IoArrowBack, IoArrowUp } from "react-icons/io5";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import {
+  IoArrowBack,
+  IoArrowUp,
+  IoCheckmark,
+  IoCopyOutline,
+} from "react-icons/io5";
 import type { CellProps } from "./util/CellProps";
 import type { WithParentVisualProps } from "./util/VisualProps";
 import VisualPropsView from "./VisualPropsView";
@@ -39,6 +44,28 @@ function CellPropsView({
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
 
   const showButtons = isHovered && !isAnyDragging;
+
+  const cellId = props?.cellId;
+  const hasText = !!props?.text;
+  const [copied, setCopied] = useState(false);
+  const copyResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (copyResetTimer.current) clearTimeout(copyResetTimer.current);
+    },
+    [],
+  );
+  const handleCopyId = useCallback(async () => {
+    if (cellId == null) return;
+    try {
+      await navigator.clipboard.writeText(String(cellId));
+      setCopied(true);
+      if (copyResetTimer.current) clearTimeout(copyResetTimer.current);
+      copyResetTimer.current = setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard API unavailable; ignore
+    }
+  }, [cellId]);
 
   const propsWithParent = withParentVisualProps(props);
   return (
@@ -81,6 +108,59 @@ function CellPropsView({
           >
             <IoArrowUp size={11} />
           </ActionIcon>
+        </Group>
+      )}
+      {showButtons && hasText && (
+        <Group
+          gap={2}
+          style={{
+            position: "absolute",
+            bottom: -2,
+            right: 0,
+            zIndex: 10,
+          }}
+        >
+          {cellId != null ? (
+            <Tooltip
+              label={copied ? "コピーしました" : `cellId ${cellId} をコピー`}
+            >
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                onClick={handleCopyId}
+                leftSection={
+                  copied ? (
+                    <IoCheckmark size={11} />
+                  ) : (
+                    <IoCopyOutline size={11} />
+                  )
+                }
+                styles={{
+                  root: { height: 16, paddingLeft: 4, paddingRight: 4 },
+                  label: { fontSize: 10 },
+                }}
+              >
+                #{cellId}
+              </Button>
+            </Tooltip>
+          ) : (
+            <Tooltip label="ダウンロード時に確定します">
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                color="gray"
+                data-disabled
+                onClick={(e) => e.preventDefault()}
+                leftSection={<IoCopyOutline size={11} />}
+                styles={{
+                  root: { height: 16, paddingLeft: 4, paddingRight: 4 },
+                  label: { fontSize: 10 },
+                }}
+              >
+                #?
+              </Button>
+            </Tooltip>
+          )}
         </Group>
       )}
       <Group>
