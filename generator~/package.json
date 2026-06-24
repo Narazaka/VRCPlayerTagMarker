@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.10",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.61.1",
     "@types/chroma-js": "^3.1.1",
     "@types/png-chunks-encode": "^1.0.2",
     "@types/png-chunks-extract": "^1.0.2",
