@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4272125988853096826}
   - component: {fileID: 5689064954484332110}
   - component: {fileID: 5911536378526810697}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PlayerRenderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -141,6 +141,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 7907574565371781915}
   _renderer: {fileID: 5911536378526810697}
   _tagMarkerPlayerState: {fileID: 0}
+  showAll: 0
 --- !u!114 &7907574565371781915
 MonoBehaviour:
   m_ObjectHideFlags: 0
