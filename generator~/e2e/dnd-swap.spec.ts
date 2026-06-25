@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("D&D cell swap", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForTimeout(500);
+    await expect(page.locator("table td input").first()).toBeVisible();
   });
 
   test("ハンバーガーアイコンをドラッグして別セルにドロップするとテキストが入れ替わる", async ({

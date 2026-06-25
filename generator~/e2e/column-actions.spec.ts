@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("Column actions", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForTimeout(500);
+    await expect(page.locator("table td input").first()).toBeVisible();
   });
 
   /** テーブルのtdセル内のinput値を行×列の2D配列で取得する */

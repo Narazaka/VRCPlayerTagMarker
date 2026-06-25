@@ -33,9 +33,9 @@ describe("loadPngDataFromBlob", () => {
     const blob = createPngBlob(v1Data);
     const result = await loadPngDataFromBlob(blob);
     expect(result).toBeDefined();
-    expect(result!.version).toBe(2);
-    expect(result!.cells[0][0]?.cellId).toBe(1);
-    expect(result!.cells[0][0]?.text).toBe("hello");
+    expect(result?.version).toBe(2);
+    expect(result?.cells[0][0]?.cellId).toBe(1);
+    expect(result?.cells[0][0]?.text).toBe("hello");
   });
 
   it("version 1 の空テキストセルにはcellIdが付与されない", async () => {
@@ -53,7 +53,7 @@ describe("loadPngDataFromBlob", () => {
     };
     const blob = createPngBlob(v1Data);
     const result = await loadPngDataFromBlob(blob);
-    expect(result!.cells[0][0]?.cellId).toBeUndefined();
+    expect(result?.cells[0][0]?.cellId).toBeUndefined();
   });
 
   it("maxCellIdが全セルの最大値として計算される", async () => {
@@ -75,7 +75,7 @@ describe("loadPngDataFromBlob", () => {
     const blob = createPngBlob(v1Data);
     const result = await loadPngDataFromBlob(blob);
     // Sequential: a=1, b=2, c=3
-    expect(result!.maxCellId).toBe(3);
+    expect(result?.maxCellId).toBe(3);
   });
 
   it("version 2 データはcellIdがそのまま維持される", async () => {
@@ -94,8 +94,8 @@ describe("loadPngDataFromBlob", () => {
     };
     const blob = createPngBlob(v2Data);
     const result = await loadPngDataFromBlob(blob);
-    expect(result!.cells[0][0]?.cellId).toBe(42);
-    expect(result!.maxCellId).toBe(42);
+    expect(result?.cells[0][0]?.cellId).toBe(42);
+    expect(result?.maxCellId).toBe(42);
   });
 
   it("行がnullの場合でもクラッシュしない", async () => {
@@ -115,8 +115,8 @@ describe("loadPngDataFromBlob", () => {
     const blob = createPngBlob(data);
     const result = await loadPngDataFromBlob(blob);
     expect(result).toBeDefined();
-    expect(result!.cells[0]).toEqual([]);
-    expect(result!.cells[1][0]?.text).toBe("hello");
+    expect(result?.cells[0]).toEqual([]);
+    expect(result?.cells[1][0]?.text).toBe("hello");
   });
 
   it("出力のversionが常に2になる", async () => {
@@ -134,6 +134,6 @@ describe("loadPngDataFromBlob", () => {
     };
     const blob = createPngBlob(v1Data);
     const result = await loadPngDataFromBlob(blob);
-    expect(result!.version).toBe(2);
+    expect(result?.version).toBe(2);
   });
 });

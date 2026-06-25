@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("Cell insert/delete", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForTimeout(500);
+    await expect(page.locator("table td input").first()).toBeVisible();
   });
 
   /** テーブルのtdセル内のinput値を行×列の2D配列で取得する */
@@ -295,7 +295,6 @@ test.describe("Cell insert/delete", () => {
       page.on("dialog", (d) => d.accept());
 
       const inputs = await page.locator("table td input").all();
-      const col = 3;
       // 行0のみにデータ、行1,2,3は空
       await inputs[0].fill("A");
 

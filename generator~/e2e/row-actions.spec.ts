@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("Row actions", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await page.waitForTimeout(500);
+    await expect(page.locator("table td input").first()).toBeVisible();
   });
 
   test("+ボタンで空行が挿入される", async ({ page }) => {

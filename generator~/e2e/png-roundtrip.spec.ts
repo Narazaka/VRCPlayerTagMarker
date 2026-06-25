@@ -6,7 +6,7 @@ test.describe("PNG roundtrip", () => {
     page,
   }) => {
     await page.goto("/");
-    await page.waitForTimeout(500);
+    await expect(page.locator("table td input").first()).toBeVisible();
 
     // テキストを入力
     const inputs = await page.locator("table td input").all();
@@ -42,7 +42,7 @@ test.describe("PNG roundtrip", () => {
     page,
   }) => {
     await page.goto("/");
-    await page.waitForTimeout(500);
+    await expect(page.locator("table td input").first()).toBeVisible();
 
     // デフォルト3列×4行の最終セル(row=3, col=2)に1文字ずつ入力
     // 1文字目: cells配列にempty slots（sparse array）が作られる
