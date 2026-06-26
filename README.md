@@ -25,6 +25,8 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.5.1:
+  - breaking: TagMarkerViewOnPlayerのデフォルトオフセットを変更
 - 0.5.0:
   - 頭ボーン基準の位置取りに（オプショナル）
     - breaking: TagMarkerViewOnPlayerのデフォルトオフセットを変更
