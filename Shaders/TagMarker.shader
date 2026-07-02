@@ -131,12 +131,11 @@ Shader "VRCPlayerTagMarker/TagMarker"
                 #endif
             }
 
-            #if !_DISPLAY_FIXED
-                // ALIGN系はフラグを頂点シェーダーで読み、flat(nointerpolation)整数varyingでフラグメントへ渡す。
-                // フラグメント内でインスタンスデータ(動的インデックスのUBO構造体配列)を直接読むと、
-                // Mali系ドライバ(Pixel 7/Tensor G2で確認)がinstanced変種をミスコンパイルし表示が壊れるため。
-                // FIXEDはピクセル依存の動的colでフラグを引く必要がありvarying化の対象外(実機で問題も出ていない)
+            // 全モード共通: フラグは頂点シェーダーで読み、flat(nointerpolation)整数varyingでフラグメントへ渡す。
+            // フラグメント内でインスタンスデータ(動的インデックスのUBO構造体配列)を直接読むと、
+            // Mali系ドライバ(Pixel 7/Tensor G2で確認)がinstanced変種をミスコンパイルし表示が壊れるため。
 
+            #if !_DISPLAY_FIXED
                 // DETECT SLOTS (pass1): スロット総数と最大タグ数の集計。フラグのみで決まり全ピクセルで同一のため、
                 // ピクセル毎ではなく頂点シェーダーで計算してvaryingで渡す(特にCOLの行カウントのピクセル毎コスト削減)
                 int2 tagCountSlots(uint flags[MAX_COL]) {
@@ -195,6 +194,35 @@ Shader "VRCPlayerTagMarker/TagMarker"
                             o.tagSlotCounts = tagCountSlots(tmFlags); \
                         }
                 #endif
+            #else
+                // FIXEDはスロット集計が不要なのでフラグのみ渡す
+                #if defined(_TAG_LAYOUT_L16X16) || defined(_TAG_LAYOUT_L16X32)
+                    #define VR_BILLBOARD_EXTRA_V2F \
+                        nointerpolation uint4 tagFlags0 : TEXCOORD2; \
+                        nointerpolation uint4 tagFlags1 : TEXCOORD3; \
+                        nointerpolation uint4 tagFlags2 : TEXCOORD4; \
+                        nointerpolation uint4 tagFlags3 : TEXCOORD5;
+                    #define VR_BILLBOARD_VERT_EXTRA(v, o) \
+                        { \
+                            uint tmFlags[MAX_COL]; \
+                            [unroll] for (int tmCol = 0; tmCol < MAX_COL; tmCol++) { tmFlags[tmCol] = getTagFlags(tmCol); } \
+                            o.tagFlags0 = uint4(tmFlags[0], tmFlags[1], tmFlags[2], tmFlags[3]); \
+                            o.tagFlags1 = uint4(tmFlags[4], tmFlags[5], tmFlags[6], tmFlags[7]); \
+                            o.tagFlags2 = uint4(tmFlags[8], tmFlags[9], tmFlags[10], tmFlags[11]); \
+                            o.tagFlags3 = uint4(tmFlags[12], tmFlags[13], tmFlags[14], tmFlags[15]); \
+                        }
+                #else
+                    #define VR_BILLBOARD_EXTRA_V2F \
+                        nointerpolation uint4 tagFlags0 : TEXCOORD2; \
+                        nointerpolation uint4 tagFlags1 : TEXCOORD3;
+                    #define VR_BILLBOARD_VERT_EXTRA(v, o) \
+                        { \
+                            uint tmFlags[MAX_COL]; \
+                            [unroll] for (int tmCol = 0; tmCol < MAX_COL; tmCol++) { tmFlags[tmCol] = getTagFlags(tmCol); } \
+                            o.tagFlags0 = uint4(tmFlags[0], tmFlags[1], tmFlags[2], tmFlags[3]); \
+                            o.tagFlags1 = uint4(tmFlags[4], tmFlags[5], tmFlags[6], tmFlags[7]); \
+                        }
+                #endif
             #endif
 
             #define VR_BILLBOARD_DISABLE_BILLBOARD
@@ -207,7 +235,27 @@ Shader "VRCPlayerTagMarker/TagMarker"
                 #if _DISPLAY_FIXED
                     int col = floor(i.uv.x * _TagDataColCount);
                     int row = floor((1 - i.uv.y) * _TagDataRowCount);
-                    uint flags = getTagFlags(col);
+                    // フラグは頂点シェーダーが読んだflat varyingから取得(フラグメントでのインスタンスデータ直接読みは
+                    // Mali系ドライバのミスコンパイルを踏むため)。colは動的だが、varyingへの動的インデックスは
+                    // メモリ配列化してスクラッチへスピルするため、三項演算子の選択チェーンで選ぶ
+                    uint flags = i.tagFlags0.x;
+                    flags = col == 1 ? i.tagFlags0.y : flags;
+                    flags = col == 2 ? i.tagFlags0.z : flags;
+                    flags = col == 3 ? i.tagFlags0.w : flags;
+                    flags = col == 4 ? i.tagFlags1.x : flags;
+                    flags = col == 5 ? i.tagFlags1.y : flags;
+                    flags = col == 6 ? i.tagFlags1.z : flags;
+                    flags = col == 7 ? i.tagFlags1.w : flags;
+                    #if defined(_TAG_LAYOUT_L16X16) || defined(_TAG_LAYOUT_L16X32)
+                    flags = col == 8 ? i.tagFlags2.x : flags;
+                    flags = col == 9 ? i.tagFlags2.y : flags;
+                    flags = col == 10 ? i.tagFlags2.z : flags;
+                    flags = col == 11 ? i.tagFlags2.w : flags;
+                    flags = col == 12 ? i.tagFlags3.x : flags;
+                    flags = col == 13 ? i.tagFlags3.y : flags;
+                    flags = col == 14 ? i.tagFlags3.z : flags;
+                    flags = col == 15 ? i.tagFlags3.w : flags;
+                    #endif
                     bool isOn = (flags >> row) & 1u;
                     fixed4 color = tex2D(_MainTex, i.uv);
                     clip(color.a - _Cutout);
