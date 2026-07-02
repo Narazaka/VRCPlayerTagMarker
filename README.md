@@ -25,6 +25,8 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.5.3:
+  - iOS(Metal)で頭上のタグが正しく表示されなかった問題を修正（Metalのコンパイルバグを回避）
 - 0.5.2:
   - Android(Quest)で頭上のタグが正しく表示されなかった問題を修正（ローカルキーワード化）
 - 0.5.1:
