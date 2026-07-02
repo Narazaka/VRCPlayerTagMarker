@@ -134,7 +134,36 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         // row first
                         for (int col = 0; col < MAX_COL; col++) {
                             uint bits = cachedFlags[col];
-                            int count = countbits(bits);
+                            #if defined(SHADER_API_METAL)
+                                // Unity(HLSLcc)のMetal翻訳はcountbits結果の書き込みをint→float数値変換、
+                                // 読み出しをas_typeビット再解釈で行うため値が壊れる(iOSで全ピクセルdiscardになり非表示になる)。
+                                // そのためMetalのみcountbitsを使わず、等価なビット並列(SWAR)ポップカウントで立っているbit数を数える。
+                                //
+                                // 原理: 32bitを小さなブロックに区切り「各ブロックの立っているbit数をそのブロック自身に格納した状態」を作り、
+                                // 隣接ブロック同士を足し合わせてブロック幅を 2bit → 4bit → 8bit → 32bit と倍々に広げていく分割統治。
+                                // 1回の32bit演算で全ブロックの計算が同時に進む(SIMD Within A Register)。
+                                // 最終的に「全32bitを1ブロックとしたbit数の合計」となるため、結果はcountbitsと完全に一致する。
+                                //
+                                // [1] 2bitブロック化: 2bit値 n = 2*b1 + b0 の立っているbit数は b1 + b0 = n - b1 = n - (n>>1)。
+                                //     0x55555555 (2進 0101...) は各2bitブロックの下位bit位置のマスクで、
+                                //     (bits >> 1) & 0x55555555 は「各ブロックの上位bit b1 をブロック内下位に降ろした値」。
+                                //     つまりこの引き算1回で、16個の全2bitブロックが一斉に「自ブロックのbit数(0～2)」に置き換わる
+                                uint c = bits - ((bits >> 1) & 0x55555555u);
+                                // [2] 2bit→4bit: 0x33333333 (2進 0011...) は各4bitブロックの下位2bit位置のマスク。
+                                //     c と c>>2 をそれぞれマスクしてから足すと、隣接2bitブロック同士の和(最大2+2=4)が各4bitブロックに入る。
+                                //     和の最大値4は2bitに収まらないため、先にマスクで4bit幅の空きを確保してから足す必要がある
+                                c = (c & 0x33333333u) + ((c >> 2) & 0x33333333u);
+                                // [3] 4bit→8bit: 隣接4bitブロック同士の和は最大4+4=8で4bitに収まり、どのブロックからも桁あふれが出ない。
+                                //     そのため[2]と違い先に c + (c>>4) を計算してよく、その後 0x0F0F0F0F で
+                                //     各8bitブロックの下位4bit(=正しい和)だけ残し、上位4bitに残ったゴミを消す
+                                c = (c + (c >> 4)) & 0x0F0F0F0Fu;
+                                // [4] 8bit×4個→合計: x * 0x01010101 = x + (x<<8) + (x<<16) + (x<<24) なので、
+                                //     積の最上位バイトは「4つの全バイトの和」になる(各バイト最大8・総和最大32 < 256 なので繰り上がり無し)。
+                                //     >> 24 でその最上位バイトを取り出したものが、32bit全体の立っているbit数
+                                int count = int((c * 0x01010101u) >> 24);
+                            #else
+                                int count = countbits(bits);
+                            #endif
                             activeSlotCountBySubAxis[mainAxisActiveSlotCount] = count;
                             subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
                             mainAxisBySlot[mainAxisActiveSlotCount] = col;
