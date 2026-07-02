@@ -25,6 +25,8 @@ https://github.com/Narazaka/VRCPlayerTagMarker/releases/latest から `net.naraz
 
 ## 更新履歴
 
+- 0.5.5:
+  - パフォーマンスを改善（特に表示タグが少ない時）
 - 0.5.4:
   - パフォーマンス（特にAndroidでの著しいフレーム落ち）を改善
 - 0.5.3:
