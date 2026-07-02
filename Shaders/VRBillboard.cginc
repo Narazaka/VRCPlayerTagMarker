@@ -24,6 +24,10 @@
 /// #define VR_BILLBOARD_DISABLE_BILLBOARD
 /// // optional: enable billboard (is stronger than disable)
 /// #define VR_BILLBOARD_ENABLE_BILLBOARD
+/// // optional: add extra varying fields to v2f (use TEXCOORD2 or later)
+/// #define VR_BILLBOARD_EXTRA_V2F nointerpolation uint4 myData : TEXCOORD2;
+/// // optional: fill extra varyings at the end of vert (UNITY_SETUP_INSTANCE_ID is already done)
+/// #define VR_BILLBOARD_VERT_EXTRA(v, o) o.myData = ...;
 /// #include "VRBillboard.cginc"
 ///
 /// fixed4 frag (v2f i) : SV_Target
@@ -82,6 +86,10 @@ struct VR_BILLBOARD_VERT_TO_FRAG
 {
     float2 uv : TEXCOORD0;
     UNITY_FOG_COORDS(1)
+    // optional: 利用側が追加のvaryingフィールドを差し込める(TEXCOORD2以降を使うこと)
+    #ifdef VR_BILLBOARD_EXTRA_V2F
+    VR_BILLBOARD_EXTRA_V2F
+    #endif
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
     float4 vertex : SV_POSITION;
@@ -98,6 +106,10 @@ VR_BILLBOARD_VERT_TO_FRAG vert (appdata v)
     o.vertex = UnityObjectToClipPos(v.vertex);
     o.uv = VR_BILLBOARD_MIRRORFLIP(TRANSFORM_TEX(v.uv, VR_BILLBOARD_MAIN_TEX));
     UNITY_TRANSFER_FOG(o, o.vertex);
+    // optional: 利用側の追加varyingの書き込み処理(UNITY_SETUP_INSTANCE_ID済みの文脈で呼ばれる)
+    #ifdef VR_BILLBOARD_VERT_EXTRA
+    VR_BILLBOARD_VERT_EXTRA(v, o)
+    #endif
     return o;
 }
 #else
@@ -131,6 +143,10 @@ VR_BILLBOARD_VERT_TO_FRAG vert (appdata v)
     o.vertex = mul(UNITY_MATRIX_VP, worldPos);
     o.uv = VR_BILLBOARD_MIRRORFLIP(TRANSFORM_TEX(v.uv, VR_BILLBOARD_MAIN_TEX));
     UNITY_TRANSFER_FOG(o, o.vertex);
+    // optional: 利用側の追加varyingの書き込み処理(UNITY_SETUP_INSTANCE_ID済みの文脈で呼ばれる)
+    #ifdef VR_BILLBOARD_VERT_EXTRA
+    VR_BILLBOARD_VERT_EXTRA(v, o)
+    #endif
     return o;
 }
 #endif

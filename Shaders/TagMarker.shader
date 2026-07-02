@@ -120,6 +120,32 @@ Shader "VRCPlayerTagMarker/TagMarker"
                 #endif
             }
 
+            #if !_DISPLAY_FIXED
+                // ALIGN系はフラグを頂点シェーダーで読み、flat(nointerpolation)整数varyingでフラグメントへ渡す。
+                // フラグメント内でインスタンスデータ(動的インデックスのUBO構造体配列)を直接読むと、
+                // Mali系ドライバ(Pixel 7/Tensor G2で確認)がinstanced変種をミスコンパイルし表示が壊れるため。
+                // FIXEDはピクセル依存の動的colでフラグを引く必要がありvarying化の対象外(実機で問題も出ていない)
+                #if defined(_TAG_LAYOUT_L16X16) || defined(_TAG_LAYOUT_L16X32)
+                    #define VR_BILLBOARD_EXTRA_V2F \
+                        nointerpolation uint4 tagFlags0 : TEXCOORD2; \
+                        nointerpolation uint4 tagFlags1 : TEXCOORD3; \
+                        nointerpolation uint4 tagFlags2 : TEXCOORD4; \
+                        nointerpolation uint4 tagFlags3 : TEXCOORD5;
+                    #define VR_BILLBOARD_VERT_EXTRA(v, o) \
+                        o.tagFlags0 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_0), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_1), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_2), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_3)); \
+                        o.tagFlags1 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_4), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_5), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_6), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_7)); \
+                        o.tagFlags2 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_8), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_9), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_10), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_11)); \
+                        o.tagFlags3 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_12), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_13), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_14), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_15));
+                #else
+                    #define VR_BILLBOARD_EXTRA_V2F \
+                        nointerpolation uint4 tagFlags0 : TEXCOORD2; \
+                        nointerpolation uint4 tagFlags1 : TEXCOORD3;
+                    #define VR_BILLBOARD_VERT_EXTRA(v, o) \
+                        o.tagFlags0 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_0), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_1), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_2), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_3)); \
+                        o.tagFlags1 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_4), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_5), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_6), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_7));
+                #endif
+            #endif
+
             #define VR_BILLBOARD_DISABLE_BILLBOARD
             #include "./VRBillboard.cginc"
 
@@ -147,13 +173,29 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     clip(color.a - _Cutout);
                     color = lerp(lerp(color * _DisabledColor, float4(_DisabledColor.rgb * _DisabledColor.a + color.rgb * (1 - _DisabledColor.a), color.a), _DisabledColor.a < 1), color, isOn);
                 #else
-                    // cache all flag values upfront to avoid repeated switch evaluation
-                    // cachedFlagsは必ず[unroll]済みループの定数インデックスでのみ参照すること。
+                    // フラグは頂点シェーダーが読んだflat varyingから受け取る(VR_BILLBOARD_VERT_EXTRA参照)。
+                    // フラグメントでのインスタンスデータ直接読みはMali系ドライバのミスコンパイルを踏むため行わない。
+                    // cachedFlagsは必ず定数インデックスでのみ参照すること。
                     // 動的インデックスが1箇所でもあるとレジスタに昇格できずメモリ配列(モバイルGPUではスクラッチへスピル)になる
                     uint cachedFlags[MAX_COL];
-                    [unroll] for (int ci = 0; ci < MAX_COL; ci++) {
-                        cachedFlags[ci] = getTagFlags(ci);
-                    }
+                    cachedFlags[0] = i.tagFlags0.x;
+                    cachedFlags[1] = i.tagFlags0.y;
+                    cachedFlags[2] = i.tagFlags0.z;
+                    cachedFlags[3] = i.tagFlags0.w;
+                    cachedFlags[4] = i.tagFlags1.x;
+                    cachedFlags[5] = i.tagFlags1.y;
+                    cachedFlags[6] = i.tagFlags1.z;
+                    cachedFlags[7] = i.tagFlags1.w;
+                    #if defined(_TAG_LAYOUT_L16X16) || defined(_TAG_LAYOUT_L16X32)
+                    cachedFlags[8] = i.tagFlags2.x;
+                    cachedFlags[9] = i.tagFlags2.y;
+                    cachedFlags[10] = i.tagFlags2.z;
+                    cachedFlags[11] = i.tagFlags2.w;
+                    cachedFlags[12] = i.tagFlags3.x;
+                    cachedFlags[13] = i.tagFlags3.y;
+                    cachedFlags[14] = i.tagFlags3.z;
+                    cachedFlags[15] = i.tagFlags3.w;
+                    #endif
 
                     int subAxisMaxActiveSlotCount = 0;
                     int mainAxisActiveSlotCount = 0;
