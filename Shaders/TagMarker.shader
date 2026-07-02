@@ -61,6 +61,17 @@ Shader "VRCPlayerTagMarker/TagMarker"
                 #endif
             UNITY_INSTANCING_BUFFER_END(Props)
 
+            #if defined(_TAG_LAYOUT_L16X32)
+                #define MAX_COL 16
+                #define MAX_ROW 32
+            #elif defined(_TAG_LAYOUT_L16X16)
+                #define MAX_COL 16
+                #define MAX_ROW 16
+            #else // _TAG_LAYOUT_L8X32 (default)
+                #define MAX_COL 8
+                #define MAX_ROW 32
+            #endif
+
             uint getTagFlags(int col) {
                 switch(col) {
                     case 0: return UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_0);
@@ -125,40 +136,69 @@ Shader "VRCPlayerTagMarker/TagMarker"
                 // フラグメント内でインスタンスデータ(動的インデックスのUBO構造体配列)を直接読むと、
                 // Mali系ドライバ(Pixel 7/Tensor G2で確認)がinstanced変種をミスコンパイルし表示が壊れるため。
                 // FIXEDはピクセル依存の動的colでフラグを引く必要がありvarying化の対象外(実機で問題も出ていない)
+
+                // DETECT SLOTS (pass1): スロット総数と最大タグ数の集計。フラグのみで決まり全ピクセルで同一のため、
+                // ピクセル毎ではなく頂点シェーダーで計算してvaryingで渡す(特にCOLの行カウントのピクセル毎コスト削減)
+                int2 tagCountSlots(uint flags[MAX_COL]) {
+                    int mainAxisActiveSlotCount = 0;
+                    int subAxisMaxActiveSlotCount = 0;
+                    #if _DISPLAY_ALIGN_ROW
+                        // main axis = col / row first
+                        [unroll] for (int col = 0; col < MAX_COL; col++) {
+                            uint bits = flags[col];
+                            int count = tagCountBits(bits);
+                            subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
+                            mainAxisActiveSlotCount += bits != 0;
+                        }
+                    #elif _DISPLAY_ALIGN_COL
+                        // main axis = row / col first
+                        [unroll] for (int row = 0; row < MAX_ROW; row++) {
+                            int count = 0;
+                            [unroll] for (int col = 0; col < MAX_COL; col++) {
+                                count += (flags[col] >> row) & 1u;
+                            }
+                            subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
+                            mainAxisActiveSlotCount += count != 0;
+                        }
+                    #endif
+                    return int2(mainAxisActiveSlotCount, subAxisMaxActiveSlotCount);
+                }
+
                 #if defined(_TAG_LAYOUT_L16X16) || defined(_TAG_LAYOUT_L16X32)
                     #define VR_BILLBOARD_EXTRA_V2F \
                         nointerpolation uint4 tagFlags0 : TEXCOORD2; \
                         nointerpolation uint4 tagFlags1 : TEXCOORD3; \
                         nointerpolation uint4 tagFlags2 : TEXCOORD4; \
-                        nointerpolation uint4 tagFlags3 : TEXCOORD5;
+                        nointerpolation uint4 tagFlags3 : TEXCOORD5; \
+                        nointerpolation int2 tagSlotCounts : TEXCOORD6;
                     #define VR_BILLBOARD_VERT_EXTRA(v, o) \
-                        o.tagFlags0 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_0), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_1), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_2), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_3)); \
-                        o.tagFlags1 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_4), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_5), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_6), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_7)); \
-                        o.tagFlags2 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_8), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_9), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_10), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_11)); \
-                        o.tagFlags3 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_12), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_13), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_14), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_15));
+                        { \
+                            uint tmFlags[MAX_COL]; \
+                            [unroll] for (int tmCol = 0; tmCol < MAX_COL; tmCol++) { tmFlags[tmCol] = getTagFlags(tmCol); } \
+                            o.tagFlags0 = uint4(tmFlags[0], tmFlags[1], tmFlags[2], tmFlags[3]); \
+                            o.tagFlags1 = uint4(tmFlags[4], tmFlags[5], tmFlags[6], tmFlags[7]); \
+                            o.tagFlags2 = uint4(tmFlags[8], tmFlags[9], tmFlags[10], tmFlags[11]); \
+                            o.tagFlags3 = uint4(tmFlags[12], tmFlags[13], tmFlags[14], tmFlags[15]); \
+                            o.tagSlotCounts = tagCountSlots(tmFlags); \
+                        }
                 #else
                     #define VR_BILLBOARD_EXTRA_V2F \
                         nointerpolation uint4 tagFlags0 : TEXCOORD2; \
-                        nointerpolation uint4 tagFlags1 : TEXCOORD3;
+                        nointerpolation uint4 tagFlags1 : TEXCOORD3; \
+                        nointerpolation int2 tagSlotCounts : TEXCOORD4;
                     #define VR_BILLBOARD_VERT_EXTRA(v, o) \
-                        o.tagFlags0 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_0), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_1), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_2), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_3)); \
-                        o.tagFlags1 = uint4(UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_4), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_5), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_6), UNITY_ACCESS_INSTANCED_PROP(Props, _TagFlags_7));
+                        { \
+                            uint tmFlags[MAX_COL]; \
+                            [unroll] for (int tmCol = 0; tmCol < MAX_COL; tmCol++) { tmFlags[tmCol] = getTagFlags(tmCol); } \
+                            o.tagFlags0 = uint4(tmFlags[0], tmFlags[1], tmFlags[2], tmFlags[3]); \
+                            o.tagFlags1 = uint4(tmFlags[4], tmFlags[5], tmFlags[6], tmFlags[7]); \
+                            o.tagSlotCounts = tagCountSlots(tmFlags); \
+                        }
                 #endif
             #endif
 
             #define VR_BILLBOARD_DISABLE_BILLBOARD
             #include "./VRBillboard.cginc"
-
-            #if defined(_TAG_LAYOUT_L16X32)
-                #define MAX_COL 16
-                #define MAX_ROW 32
-            #elif defined(_TAG_LAYOUT_L16X16)
-                #define MAX_COL 16
-                #define MAX_ROW 16
-            #else // _TAG_LAYOUT_L8X32 (default)
-                #define MAX_COL 8
-                #define MAX_ROW 32
-            #endif
 
             fixed4 frag (v2f i) : SV_Target
             {
@@ -197,24 +237,30 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     cachedFlags[15] = i.tagFlags3.w;
                     #endif
 
-                    int subAxisMaxActiveSlotCount = 0;
-                    int mainAxisActiveSlotCount = 0;
+                    // UVオフセットがタグ境界で不連続にジャンプするため、tex2Dの自動微分ではミップレベルが誤選択され境界に線が出る
+                    // オフセット前の連続なi.uvから微分値を計算しtex2Dgradで明示指定することで回避。
+                    // discardの実行後はquad内の微分値が仕様上未定義になるため、必ず全discardより前で計算する
+                    float2 uvDdx = ddx(i.uv);
+                    float2 uvDdy = ddy(i.uv);
+
+                    // pass1集計(スロット総数・最大タグ数)は頂点シェーダー(tagCountSlots)で計算済みの値を受け取る
+                    int mainAxisActiveSlotCount = i.tagSlotCounts.x;
+                    int subAxisMaxActiveSlotCount = i.tagSlotCounts.y;
+
+                    // 以降、棄却は「表示領域外 → スロットのタグ数超過 → cutout」の3段階に分けて早期に行う。
+                    // if文増加によるワープ内発散(divergence)の懸念には当たらない:
+                    // - これらの条件は画面空間でコヒーレント(隣接ピクセルがほぼ同方向)なため、ワープが割れるのは領域境界のみ
+                    // - 割れたワープのコストは「discard側=何もしない + 続行側=フルパス」の和 = 従来の全ピクセル無条件実行と同じ。
+                    //   つまり最悪ケースが従来と同等で、全レーンdiscardのワープ(空白領域の大半)は後続処理を丸ごとスキップできる
+                    // - discardペナルティ(タイル型GPUのearly-Z無効等)は「シェーダーにdiscardが1つでも含まれるか」で決まるため、
+                    //   段階化(discard文の増加)では悪化しない
                     #if _DISPLAY_ALIGN_ROW
                         // main axis = col
                         // スロット表を動的インデックスのローカル配列に持つとモバイルGPUでスクラッチメモリへ
                         // スピルして極端に遅くなる。またHLSLccが生成する実行時ループはカウンタをfloatレジスタの
                         // ビットパターンで回すため、denormalをゼロにフラッシュするGPU(Adreno等)で無限ループ＝ハングし得る。
-                        // そのため配列と実行時ループを使わず、[unroll]した2パス走査で必要なスロットだけを選択取得する。
+                        // そのため配列と実行時ループを使わず、[unroll]した選択走査で必要なスロットだけを取得する。
 
-                        // DETECT SLOTS (pass1): スロット総数と最大タグ数のみスカラーで集計
-
-                        // row first
-                        [unroll] for (int col = 0; col < MAX_COL; col++) {
-                            uint bits = cachedFlags[col];
-                            int count = tagCountBits(bits);
-                            subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
-                            mainAxisActiveSlotCount += bits != 0;
-                        }
                         // col (align center)
                         int mainAxisSlot = floor(i.uv.x * _TagDataColCount - (_TagDataColCount - mainAxisActiveSlotCount) / 2.0);
                         // row (items is align top & all region is align bottom)
@@ -223,6 +269,12 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         float currentSlotCol = (_TagDataColCount - mainAxisActiveSlotCount) / 2.0 + mainAxisSlot;
                         // top of cell pos (0.5 allowed)
                         float currentSlotRow = (_TagDataRowCount - subAxisMaxActiveSlotCount) + subAxisSlot;
+
+                        // 表示領域外はここで棄却し、以降の選択走査・テクスチャ読みを実行しない(空白領域のピクセル単価削減)。
+                        // subAxisSlot >= subAxisMaxActiveSlotCount はどの列のタグ数以上でもあるため、後段のタグ数判定に対する安全な早期棄却
+                        if (mainAxisSlot < 0 || subAxisSlot < 0 || mainAxisSlot >= mainAxisActiveSlotCount || subAxisSlot >= subAxisMaxActiveSlotCount) {
+                            discard;
+                        }
 
                         // MAP (pass2): mainAxisSlot番目の非ゼロ列を選択走査で特定(配列を使わない)
 
@@ -239,6 +291,10 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         }
                         // 表示スロット列のタグ数 (旧activeSlotCountBySubAxis[mainAxisSlot]相当)
                         int currentSlotActiveCount = tagCountBits(colBits);
+                        // この列のタグ数を超える空セルは行走査とテクスチャ読みの前に棄却
+                        if (subAxisSlot >= currentSlotActiveCount) {
+                            discard;
+                        }
                         int currentRow = 0;
                         int foundRow = 0;
                         [unroll] for (int row = 0; row < MAX_ROW; row++) {
@@ -247,25 +303,20 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         }
                     #elif _DISPLAY_ALIGN_COL
                         // main axis = row
-                        // ROW側と同様、配列と実行時ループを使わない[unroll]の2パス走査で構成する
+                        // ROW側と同様、配列と実行時ループを使わない[unroll]の選択走査で構成する
 
-                        // DETECT SLOTS (pass1): スロット総数と最大タグ数のみスカラーで集計
-
-                        // col first
-                        [unroll] for (int row = 0; row < MAX_ROW; row++) {
-                            int count = 0;
-                            [unroll] for (int col = 0; col < MAX_COL; col++) {
-                                count += (cachedFlags[col] >> row) & 1u;
-                            }
-                            subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
-                            mainAxisActiveSlotCount += count != 0;
-                        }
                         // row (items is align top & all region is align bottom)
                         int mainAxisSlot = floor((1 - i.uv.y) * _TagDataRowCount - (_TagDataRowCount - mainAxisActiveSlotCount));
                         // col (align center)
                         int subAxisSlot = floor(i.uv.x * _TagDataColCount - (_TagDataColCount - subAxisMaxActiveSlotCount) / 2.0);
                         float currentSlotCol = (_TagDataColCount - subAxisMaxActiveSlotCount) / 2.0 + subAxisSlot;
                         float currentSlotRow = (_TagDataRowCount - mainAxisActiveSlotCount) + mainAxisSlot;
+
+                        // 表示領域外はここで棄却し、以降の選択走査・テクスチャ読みを実行しない(空白領域のピクセル単価削減)。
+                        // subAxisSlot >= subAxisMaxActiveSlotCount はどの行のタグ数以上でもあるため、後段のタグ数判定に対する安全な早期棄却
+                        if (mainAxisSlot < 0 || subAxisSlot < 0 || mainAxisSlot >= mainAxisActiveSlotCount || subAxisSlot >= subAxisMaxActiveSlotCount) {
+                            discard;
+                        }
 
                         // MAP (pass2): mainAxisSlot番目の非ゼロ行を選択走査で特定(配列を使わない)
 
@@ -284,6 +335,10 @@ Shader "VRCPlayerTagMarker/TagMarker"
                             currentSlotActiveCount = hit ? count : currentSlotActiveCount;
                             seenActive += count != 0;
                         }
+                        // この行のタグ数を超える空セルは列走査とテクスチャ読みの前に棄却
+                        if (subAxisSlot >= currentSlotActiveCount) {
+                            discard;
+                        }
                         int currentCol = 0;
                         int foundCol = 0;
                         [unroll] for (int col3 = 0; col3 < MAX_COL; col3++) {
@@ -292,14 +347,11 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         }
                     #endif
 
-                    // UVオフセットがタグ境界で不連続にジャンプするため、tex2Dの自動微分ではミップレベルが誤選択され境界に線が出る
-                    // オフセット前の連続なi.uvから微分値を計算しtex2Dgradで明示指定することで回避
-                    float2 uvDdx = ddx(i.uv);
-                    float2 uvDdy = ddy(i.uv);
                     float2 uv = i.uv + float2(currentCol - currentSlotCol, (currentSlotRow - currentRow)) / float2(_TagDataColCount, _TagDataRowCount);
                     fixed4 color = tex2Dgrad(_MainTex, uv, uvDdx, uvDdy);
 
-                    if (color.a < _Cutout || mainAxisSlot < 0 || subAxisSlot < 0 || mainAxisSlot >= mainAxisActiveSlotCount || subAxisSlot >= currentSlotActiveCount) {
+                    // スロット系の棄却は各ブランチで早期に実施済み。ここは罫線・文字縁のcutoutのみ
+                    if (color.a < _Cutout) {
                         discard;
                     }
                 #endif
