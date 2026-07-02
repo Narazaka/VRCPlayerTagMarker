@@ -21,10 +21,10 @@ Shader "VRCPlayerTagMarker/TagMarker"
         Pass
         {
             CGPROGRAM
-            #pragma multi_compile _DISPLAY_FIXED _DISPLAY_ALIGN_ROW _DISPLAY_ALIGN_COL
-            #pragma multi_compile _ VR_BILLBOARD_ENABLE_BILLBOARD
+            #pragma multi_compile_local _DISPLAY_FIXED _DISPLAY_ALIGN_ROW _DISPLAY_ALIGN_COL
+            #pragma multi_compile_local _ VR_BILLBOARD_ENABLE_BILLBOARD
             #pragma target 3.5
-            #pragma shader_feature _TAG_LAYOUT_L8X32 _TAG_LAYOUT_L16X16 _TAG_LAYOUT_L16X32
+            #pragma shader_feature_local _TAG_LAYOUT_L8X32 _TAG_LAYOUT_L16X16 _TAG_LAYOUT_L16X32
 
             #pragma fragment frag
 
