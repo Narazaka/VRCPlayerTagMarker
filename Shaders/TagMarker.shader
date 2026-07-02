@@ -134,10 +134,14 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         // row first
                         for (int col = 0; col < MAX_COL; col++) {
                             uint bits = cachedFlags[col];
-                            #if defined(SHADER_API_METAL)
-                                // Unity(HLSLcc)のMetal翻訳はcountbits結果の書き込みをint→float数値変換、
-                                // 読み出しをas_typeビット再解釈で行うため値が壊れる(iOSで全ピクセルdiscardになり非表示になる)。
-                                // そのためMetalのみcountbitsを使わず、等価なビット並列(SWAR)ポップカウントで立っているbit数を数える。
+                            #if defined(SHADER_API_D3D11)
+                                int count = countbits(bits);
+                            #else
+                                // Unity(HLSLcc)のD3D11以外への翻訳(Metal/Vulkan/GLES3すべてで確認)はcountbits結果の
+                                // 書き込みをint→float数値変換、読み出しをビット再解釈で行うため値が壊れる
+                                // (iOSで全ピクセルdiscardになり非表示になる等)。さらにGLES3出力は bitCount() を
+                                // #version 300 es (ES3.1未満)で使う不正なGLSLになり実機コンパイルに失敗し得る。
+                                // そのため翻訳を経ないD3D11以外ではcountbitsを使わず、ビット並列(SWAR)ポップカウントで数える。
                                 //
                                 // 原理: 32bitを小さなブロックに区切り「各ブロックの立っているbit数をそのブロック自身に格納した状態」を作り、
                                 // 隣接ブロック同士を足し合わせてブロック幅を 2bit → 4bit → 8bit → 32bit と倍々に広げていく分割統治。
@@ -161,8 +165,6 @@ Shader "VRCPlayerTagMarker/TagMarker"
                                 //     積の最上位バイトは「4つの全バイトの和」になる(各バイト最大8・総和最大32 < 256 なので繰り上がり無し)。
                                 //     >> 24 でその最上位バイトを取り出したものが、32bit全体の立っているbit数
                                 int count = int((c * 0x01010101u) >> 24);
-                            #else
-                                int count = countbits(bits);
                             #endif
                             activeSlotCountBySubAxis[mainAxisActiveSlotCount] = count;
                             subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
