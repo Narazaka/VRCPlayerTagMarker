@@ -85,6 +85,41 @@ Shader "VRCPlayerTagMarker/TagMarker"
                 }
             }
 
+            inline int tagCountBits(uint bits) {
+                #if defined(SHADER_API_D3D11)
+                    return countbits(bits);
+                #else
+                    // Unity(HLSLcc)のD3D11以外への翻訳(Metal/Vulkan/GLES3すべてで確認)はcountbits結果の
+                    // 書き込みをint→float数値変換、読み出しをビット再解釈で行うため値が壊れる
+                    // (iOSで全ピクセルdiscardになり非表示になる等)。さらにGLES3出力は bitCount() を
+                    // #version 300 es (ES3.1未満)で使う不正なGLSLになり実機コンパイルに失敗し得る。
+                    // そのため翻訳を経ないD3D11以外ではcountbitsを使わず、ビット並列(SWAR)ポップカウントで数える。
+                    //
+                    // 原理: 32bitを小さなブロックに区切り「各ブロックの立っているbit数をそのブロック自身に格納した状態」を作り、
+                    // 隣接ブロック同士を足し合わせてブロック幅を 2bit → 4bit → 8bit → 32bit と倍々に広げていく分割統治。
+                    // 1回の32bit演算で全ブロックの計算が同時に進む(SIMD Within A Register)。
+                    // 最終的に「全32bitを1ブロックとしたbit数の合計」となるため、結果はcountbitsと完全に一致する。
+                    //
+                    // [1] 2bitブロック化: 2bit値 n = 2*b1 + b0 の立っているbit数は b1 + b0 = n - b1 = n - (n>>1)。
+                    //     0x55555555 (2進 0101...) は各2bitブロックの下位bit位置のマスクで、
+                    //     (bits >> 1) & 0x55555555 は「各ブロックの上位bit b1 をブロック内下位に降ろした値」。
+                    //     つまりこの引き算1回で、16個の全2bitブロックが一斉に「自ブロックのbit数(0～2)」に置き換わる
+                    uint c = bits - ((bits >> 1) & 0x55555555u);
+                    // [2] 2bit→4bit: 0x33333333 (2進 0011...) は各4bitブロックの下位2bit位置のマスク。
+                    //     c と c>>2 をそれぞれマスクしてから足すと、隣接2bitブロック同士の和(最大2+2=4)が各4bitブロックに入る。
+                    //     和の最大値4は2bitに収まらないため、先にマスクで4bit幅の空きを確保してから足す必要がある
+                    c = (c & 0x33333333u) + ((c >> 2) & 0x33333333u);
+                    // [3] 4bit→8bit: 隣接4bitブロック同士の和は最大4+4=8で4bitに収まり、どのブロックからも桁あふれが出ない。
+                    //     そのため[2]と違い先に c + (c>>4) を計算してよく、その後 0x0F0F0F0F で
+                    //     各8bitブロックの下位4bit(=正しい和)だけ残し、上位4bitに残ったゴミを消す
+                    c = (c + (c >> 4)) & 0x0F0F0F0Fu;
+                    // [4] 8bit×4個→合計: x * 0x01010101 = x + (x<<8) + (x<<16) + (x<<24) なので、
+                    //     積の最上位バイトは「4つの全バイトの和」になる(各バイト最大8・総和最大32 < 256 なので繰り上がり無し)。
+                    //     >> 24 でその最上位バイトを取り出したものが、32bit全体の立っているbit数
+                    return int((c * 0x01010101u) >> 24);
+                #endif
+            }
+
             #define VR_BILLBOARD_DISABLE_BILLBOARD
             #include "./VRBillboard.cginc"
 
@@ -113,8 +148,10 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     color = lerp(lerp(color * _DisabledColor, float4(_DisabledColor.rgb * _DisabledColor.a + color.rgb * (1 - _DisabledColor.a), color.a), _DisabledColor.a < 1), color, isOn);
                 #else
                     // cache all flag values upfront to avoid repeated switch evaluation
+                    // cachedFlagsは必ず[unroll]済みループの定数インデックスでのみ参照すること。
+                    // 動的インデックスが1箇所でもあるとレジスタに昇格できずメモリ配列(モバイルGPUではスクラッチへスピル)になる
                     uint cachedFlags[MAX_COL];
-                    for (int ci = 0; ci < MAX_COL; ci++) {
+                    [unroll] for (int ci = 0; ci < MAX_COL; ci++) {
                         cachedFlags[ci] = getTagFlags(ci);
                     }
 
@@ -122,53 +159,18 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     int mainAxisActiveSlotCount = 0;
                     #if _DISPLAY_ALIGN_ROW
                         // main axis = col
-                        int activeSlotCountBySubAxis[MAX_COL];
-                        int mainAxisBySlot[MAX_COL];
-                        [unroll] for (int initIdx = 0; initIdx < MAX_COL; initIdx++) {
-                            activeSlotCountBySubAxis[initIdx] = 0;
-                            mainAxisBySlot[initIdx] = 0;
-                        }
+                        // スロット表を動的インデックスのローカル配列に持つとモバイルGPUでスクラッチメモリへ
+                        // スピルして極端に遅くなる。またHLSLccが生成する実行時ループはカウンタをfloatレジスタの
+                        // ビットパターンで回すため、denormalをゼロにフラッシュするGPU(Adreno等)で無限ループ＝ハングし得る。
+                        // そのため配列と実行時ループを使わず、[unroll]した2パス走査で必要なスロットだけを選択取得する。
 
-                        // DETECT SLOTS
+                        // DETECT SLOTS (pass1): スロット総数と最大タグ数のみスカラーで集計
 
                         // row first
-                        for (int col = 0; col < MAX_COL; col++) {
+                        [unroll] for (int col = 0; col < MAX_COL; col++) {
                             uint bits = cachedFlags[col];
-                            #if defined(SHADER_API_D3D11)
-                                int count = countbits(bits);
-                            #else
-                                // Unity(HLSLcc)のD3D11以外への翻訳(Metal/Vulkan/GLES3すべてで確認)はcountbits結果の
-                                // 書き込みをint→float数値変換、読み出しをビット再解釈で行うため値が壊れる
-                                // (iOSで全ピクセルdiscardになり非表示になる等)。さらにGLES3出力は bitCount() を
-                                // #version 300 es (ES3.1未満)で使う不正なGLSLになり実機コンパイルに失敗し得る。
-                                // そのため翻訳を経ないD3D11以外ではcountbitsを使わず、ビット並列(SWAR)ポップカウントで数える。
-                                //
-                                // 原理: 32bitを小さなブロックに区切り「各ブロックの立っているbit数をそのブロック自身に格納した状態」を作り、
-                                // 隣接ブロック同士を足し合わせてブロック幅を 2bit → 4bit → 8bit → 32bit と倍々に広げていく分割統治。
-                                // 1回の32bit演算で全ブロックの計算が同時に進む(SIMD Within A Register)。
-                                // 最終的に「全32bitを1ブロックとしたbit数の合計」となるため、結果はcountbitsと完全に一致する。
-                                //
-                                // [1] 2bitブロック化: 2bit値 n = 2*b1 + b0 の立っているbit数は b1 + b0 = n - b1 = n - (n>>1)。
-                                //     0x55555555 (2進 0101...) は各2bitブロックの下位bit位置のマスクで、
-                                //     (bits >> 1) & 0x55555555 は「各ブロックの上位bit b1 をブロック内下位に降ろした値」。
-                                //     つまりこの引き算1回で、16個の全2bitブロックが一斉に「自ブロックのbit数(0～2)」に置き換わる
-                                uint c = bits - ((bits >> 1) & 0x55555555u);
-                                // [2] 2bit→4bit: 0x33333333 (2進 0011...) は各4bitブロックの下位2bit位置のマスク。
-                                //     c と c>>2 をそれぞれマスクしてから足すと、隣接2bitブロック同士の和(最大2+2=4)が各4bitブロックに入る。
-                                //     和の最大値4は2bitに収まらないため、先にマスクで4bit幅の空きを確保してから足す必要がある
-                                c = (c & 0x33333333u) + ((c >> 2) & 0x33333333u);
-                                // [3] 4bit→8bit: 隣接4bitブロック同士の和は最大4+4=8で4bitに収まり、どのブロックからも桁あふれが出ない。
-                                //     そのため[2]と違い先に c + (c>>4) を計算してよく、その後 0x0F0F0F0F で
-                                //     各8bitブロックの下位4bit(=正しい和)だけ残し、上位4bitに残ったゴミを消す
-                                c = (c + (c >> 4)) & 0x0F0F0F0Fu;
-                                // [4] 8bit×4個→合計: x * 0x01010101 = x + (x<<8) + (x<<16) + (x<<24) なので、
-                                //     積の最上位バイトは「4つの全バイトの和」になる(各バイト最大8・総和最大32 < 256 なので繰り上がり無し)。
-                                //     >> 24 でその最上位バイトを取り出したものが、32bit全体の立っているbit数
-                                int count = int((c * 0x01010101u) >> 24);
-                            #endif
-                            activeSlotCountBySubAxis[mainAxisActiveSlotCount] = count;
+                            int count = tagCountBits(bits);
                             subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
-                            mainAxisBySlot[mainAxisActiveSlotCount] = col;
                             mainAxisActiveSlotCount += bits != 0;
                         }
                         // col (align center)
@@ -180,36 +182,40 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         // top of cell pos (0.5 allowed)
                         float currentSlotRow = (_TagDataRowCount - subAxisMaxActiveSlotCount) + subAxisSlot;
 
-                        // MAP
+                        // MAP (pass2): mainAxisSlot番目の非ゼロ列を選択走査で特定(配列を使わない)
 
-                        int currentCol = mainAxisBySlot[max(mainAxisSlot, 0)];
+                        int targetSlot = max(mainAxisSlot, 0);
+                        int currentCol = 0;
+                        uint colBits = 0;
+                        int seenActive = 0;
+                        [unroll] for (int col2 = 0; col2 < MAX_COL; col2++) {
+                            uint bits = cachedFlags[col2];
+                            bool hit = bits != 0 && seenActive == targetSlot;
+                            currentCol = hit ? col2 : currentCol;
+                            colBits = hit ? bits : colBits;
+                            seenActive += bits != 0;
+                        }
+                        // 表示スロット列のタグ数 (旧activeSlotCountBySubAxis[mainAxisSlot]相当)
+                        int currentSlotActiveCount = tagCountBits(colBits);
                         int currentRow = 0;
                         int foundRow = 0;
-                        uint colBits = cachedFlags[currentCol];
-                        for (int row = 0; row < MAX_ROW; row++) {
+                        [unroll] for (int row = 0; row < MAX_ROW; row++) {
                             foundRow += (colBits >> row) & 1u;
                             currentRow = lerp(currentRow, row + 1, foundRow == subAxisSlot);
                         }
                     #elif _DISPLAY_ALIGN_COL
                         // main axis = row
-                        int activeSlotCountBySubAxis[MAX_ROW];
-                        int mainAxisBySlot[MAX_ROW];
-                        [unroll] for (int initIdx = 0; initIdx < MAX_ROW; initIdx++) {
-                            activeSlotCountBySubAxis[initIdx] = 0;
-                            mainAxisBySlot[initIdx] = 0;
-                        }
+                        // ROW側と同様、配列と実行時ループを使わない[unroll]の2パス走査で構成する
 
-                        // DETECT SLOTS
+                        // DETECT SLOTS (pass1): スロット総数と最大タグ数のみスカラーで集計
 
                         // col first
-                        for (int row = 0; row < MAX_ROW; row++) {
+                        [unroll] for (int row = 0; row < MAX_ROW; row++) {
                             int count = 0;
-                            for (int col = 0; col < MAX_COL; col++) {
+                            [unroll] for (int col = 0; col < MAX_COL; col++) {
                                 count += (cachedFlags[col] >> row) & 1u;
                             }
-                            activeSlotCountBySubAxis[mainAxisActiveSlotCount] = count;
                             subAxisMaxActiveSlotCount = max(subAxisMaxActiveSlotCount, count);
-                            mainAxisBySlot[mainAxisActiveSlotCount] = row;
                             mainAxisActiveSlotCount += count != 0;
                         }
                         // row (items is align top & all region is align bottom)
@@ -219,14 +225,28 @@ Shader "VRCPlayerTagMarker/TagMarker"
                         float currentSlotCol = (_TagDataColCount - subAxisMaxActiveSlotCount) / 2.0 + subAxisSlot;
                         float currentSlotRow = (_TagDataRowCount - mainAxisActiveSlotCount) + mainAxisSlot;
 
-                        // MAP
+                        // MAP (pass2): mainAxisSlot番目の非ゼロ行を選択走査で特定(配列を使わない)
 
-                        int currentRow = mainAxisBySlot[max(mainAxisSlot, 0)];
+                        int targetSlot = max(mainAxisSlot, 0);
+                        int currentRow = 0;
+                        // 表示スロット行のタグ数 (旧activeSlotCountBySubAxis[mainAxisSlot]相当)
+                        int currentSlotActiveCount = 0;
+                        int seenActive = 0;
+                        [unroll] for (int row2 = 0; row2 < MAX_ROW; row2++) {
+                            int count = 0;
+                            [unroll] for (int col2 = 0; col2 < MAX_COL; col2++) {
+                                count += (cachedFlags[col2] >> row2) & 1u;
+                            }
+                            bool hit = count != 0 && seenActive == targetSlot;
+                            currentRow = hit ? row2 : currentRow;
+                            currentSlotActiveCount = hit ? count : currentSlotActiveCount;
+                            seenActive += count != 0;
+                        }
                         int currentCol = 0;
                         int foundCol = 0;
-                        for (int col = 0; col < MAX_COL; col++) {
-                            foundCol += (cachedFlags[col] >> currentRow) & 1u;
-                            currentCol = lerp(currentCol, col + 1, foundCol == subAxisSlot);
+                        [unroll] for (int col3 = 0; col3 < MAX_COL; col3++) {
+                            foundCol += (cachedFlags[col3] >> currentRow) & 1u;
+                            currentCol = lerp(currentCol, col3 + 1, foundCol == subAxisSlot);
                         }
                     #endif
 
@@ -237,7 +257,7 @@ Shader "VRCPlayerTagMarker/TagMarker"
                     float2 uv = i.uv + float2(currentCol - currentSlotCol, (currentSlotRow - currentRow)) / float2(_TagDataColCount, _TagDataRowCount);
                     fixed4 color = tex2Dgrad(_MainTex, uv, uvDdx, uvDdy);
 
-                    if (color.a < _Cutout || mainAxisSlot < 0 || subAxisSlot < 0 || mainAxisSlot >= mainAxisActiveSlotCount || subAxisSlot >= activeSlotCountBySubAxis[mainAxisSlot]) {
+                    if (color.a < _Cutout || mainAxisSlot < 0 || subAxisSlot < 0 || mainAxisSlot >= mainAxisActiveSlotCount || subAxisSlot >= currentSlotActiveCount) {
                         discard;
                     }
                 #endif
