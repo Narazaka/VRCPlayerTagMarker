@@ -35,6 +35,7 @@ import ColumnActions from "./ColumnActions";
 import DroppableCell from "./DroppableCell";
 import type { EditMode } from "./EditMode";
 import RowActions from "./RowActions";
+import TagLegend from "./TagLegend";
 import type { CellProps } from "./util/CellProps";
 import { assignCellIds as assignCellIdsImpl } from "./util/cellIdAssigner";
 import {
@@ -540,16 +541,19 @@ function App() {
             </Button>
           </Grid.Col>
         </Grid>
-        <SegmentedControl
-          value={mode}
-          onChange={(value) => setMode(value as EditMode)}
-          data={[
-            { value: "edit", label: "編集" },
-            { value: "insert", label: "挿入" },
-            { value: "delete", label: "削除" },
-            { value: "copyId", label: "IDコピー" },
-          ]}
-        />
+        <Group>
+          <SegmentedControl
+            value={mode}
+            onChange={(value) => setMode(value as EditMode)}
+            data={[
+              { value: "edit", label: "編集" },
+              { value: "insert", label: "挿入" },
+              { value: "delete", label: "削除" },
+              { value: "copyId", label: "IDコピー" },
+            ]}
+          />
+          <TagLegend />
+        </Group>
         <DndContext
           sensors={sensors}
           collisionDetection={pointerWithin}

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseRichText } from "../richText";
+import {
+  applyTagsToSelection,
+  parseRichText,
+  toRichTextTags,
+} from "../richText";
 import { defaultVisualProps } from "../VisualProps";
 
 const base = defaultVisualProps;
@@ -80,5 +84,125 @@ describe("parseRichText", () => {
 
   it("改行はそのまま断片に含まれる", () => {
     expect(texts("あ\nい")).toEqual(["あ\nい"]);
+  });
+});
+
+describe("toRichTextTags", () => {
+  it("指定したプロパティだけを外側→内側の順で書き出す", () => {
+    expect(toRichTextTags({ fontSize: 24, textColor: "#f00" })).toEqual({
+      open: "<size=24><color=#f00>",
+      close: "</color></size>",
+    });
+  });
+
+  it("太字はONのときだけタグになる（normalに戻すタグは無い）", () => {
+    expect(toRichTextTags({ fontWeight: "bold" }).open).toBe("<b>");
+    expect(toRichTextTags({ fontWeight: "normal" })).toEqual({
+      open: "",
+      close: "",
+    });
+  });
+
+  it("ふち・フォント・伸縮率も書き出せる", () => {
+    expect(
+      toRichTextTags({
+        fontFamily: "My Font",
+        outlineWidth: 4,
+        outlineColor: "#0f0",
+        outlineType: "thick",
+        scaleX: 1.5,
+      }).open,
+    ).toBe(
+      '<font="My Font"><outlineWidth=4><outlineColor=#0f0><outlineType=thick><scaleX=1.5>',
+    );
+  });
+});
+
+describe("applyTagsToSelection", () => {
+  const apply = (text: string, start: number, end: number) =>
+    applyTagsToSelection({
+      text,
+      start,
+      end,
+      props: { textColor: "#f00" },
+      base,
+    });
+
+  it("選択範囲をタグで囲み、囲んだ範囲を選択として返す", () => {
+    const result = apply("あいう", 1, 2);
+    expect(result.text).toBe("あ<color=#f00>い</color>う");
+    expect(result.text.slice(result.start, result.end)).toBe("い");
+  });
+
+  it("選択端がタグ文字列の途中なら、そのタグの外側へ寄せる", () => {
+    // "<b>あい</b>" の <b> の内部から </b> の内部までを選択
+    expect(apply("<b>あい</b>", 1, 6).text).toBe(
+      "<color=#f00><b>あい</b></color>",
+    );
+  });
+
+  it("タグの対応をまたぐ選択では、境界でタグを閉じ直す", () => {
+    expect(apply("<b>あい</b>う", 4, 10).text).toBe(
+      "<b>あ</b><color=#f00><b>い</b>う</color>",
+    );
+  });
+
+  it("選択内で開かれるタグは選択末尾で閉じ、選択の後で開き直す", () => {
+    // "あ<b>いう" の "あ<b>い" を選択
+    const result = apply("あ<b>いう", 0, 5);
+    expect(result.text).toBe("<color=#f00>あ<b>い</b></color><b>う");
+  });
+
+  it("同じ種類のタグが選択内にあれば取り除いてから被せる", () => {
+    expect(apply("<color=#0f0>あ</color>い", 0, 23).text).toBe(
+      "<color=#f00>あい</color>",
+    );
+  });
+
+  it("同種タグの除去で暗黙に閉じていたタグは明示的に閉じ直す", () => {
+    expect(apply("<color=#0f0><b>あ</color>い", 0, 26).text).toBe(
+      "<color=#f00><b>あ</b>い</color>",
+    );
+  });
+
+  const applySize = (text: string, start: number, end: number) =>
+    applyTagsToSelection({
+      text,
+      start,
+      end,
+      props: { fontSize: 32 },
+      base,
+    });
+
+  it("選択範囲をちょうど覆っている同種タグは置き換える", () => {
+    expect(applySize("<size=31>あります</size>", 9, 13).text).toBe(
+      "<size=32>あります</size>",
+    );
+  });
+
+  it("間に別のタグがあっても、覆う文字が同じなら置き換える", () => {
+    expect(applySize("<size=31><b>あ</b></size>", 12, 13).text).toBe(
+      "<b><size=32>あ</size></b>",
+    );
+  });
+
+  it("覆う範囲に選択外の文字があるときは入れ子のままにする", () => {
+    expect(applySize("<size=31>あい</size>", 10, 11).text).toBe(
+      "<size=31>あ<size=32>い</size></size>",
+    );
+  });
+
+  it("種類が違うタグは置き換えない", () => {
+    expect(applySize("<b>あ</b>", 3, 4).text).toBe("<b><size=32>あ</size></b>");
+  });
+
+  it("適用後に読み直すと選択範囲だけが指定のスタイルになる", () => {
+    const result = apply("<b>あい</b>う", 4, 10);
+    const runs = parseRichText(result.text, base);
+    const colored = runs.filter((run) => run.props.textColor === "#f00");
+    expect(colored.map((run) => run.text).join("")).toBe("いう");
+    expect(runs.find((run) => run.text === "あ")?.props.textColor).toBe(
+      base.textColor,
+    );
   });
 });

@@ -1,55 +1,12 @@
-import {
-  ActionIcon,
-  AspectRatio,
-  Checkbox,
-  ColorPicker,
-  Group,
-  NumberInput,
-  Overlay,
-  Popover,
-  SegmentedControl,
-  Slider,
-  Stack,
-  TextInput,
-} from "@mantine/core";
+import { ActionIcon, Popover } from "@mantine/core";
 import { memo } from "react";
 import { IoColorPalette } from "react-icons/io5";
-import FontSelector from "./FontSelector";
-import useWithPartial from "./useWithPartial";
 import type {
   PartialVisualProps,
   VisualProps,
   WithParentVisualProps,
 } from "./util/VisualProps";
-
-const w = 150;
-
-type StringProps = {
-  [K in keyof VisualProps]: VisualProps[K] extends string ? K : never;
-}[keyof VisualProps];
-
-const ColorPickerField = ({
-  props,
-  prop,
-  propsWithParent,
-  setProps,
-}: {
-  props: PartialVisualProps;
-  propsWithParent: VisualProps;
-  prop: StringProps;
-  setProps: (newProps: PartialVisualProps) => void;
-}) => (
-  <AspectRatio ratio={6 / 5} pos="relative">
-    <ColorPicker
-      size="xs"
-      format="hex"
-      w={w}
-      value={propsWithParent[prop]}
-      onChange={(value) => setProps({ [prop]: value })}
-    />
-    {props[prop] == null && <Overlay color="#ccc" />}
-  </AspectRatio>
-);
+import VisualPropsFields from "./VisualPropsFields";
 
 function VisualPropsView({
   required,
@@ -72,15 +29,6 @@ function VisualPropsView({
       withParentVisualProps?: never;
       fonts: string[];
     }) {
-  if (props == null) props = {};
-  const WithPartial = useWithPartial({
-    required,
-    setProps,
-    withParentVisualProps,
-  });
-  const propsWithParent = withParentVisualProps
-    ? withParentVisualProps(props)
-    : (props as VisualProps);
   return (
     <Popover
       position="right-start"
@@ -105,226 +53,13 @@ function VisualPropsView({
         </ActionIcon>
       </Popover.Target>
       <Popover.Dropdown>
-        <Stack>
-          <Group>
-            <WithPartial
-              prop="textColor"
-              value={props.textColor}
-              label="文字色"
-            >
-              <ColorPickerField
-                props={props}
-                propsWithParent={propsWithParent}
-                prop="textColor"
-                setProps={setProps}
-              />
-              <TextInput
-                disabled={props.textColor == null}
-                size="xs"
-                w={w}
-                value={propsWithParent.textColor}
-                onChange={(e) => setProps({ textColor: e.currentTarget.value })}
-              />
-            </WithPartial>
-            <WithPartial
-              prop="backgroundColor"
-              value={props.backgroundColor}
-              label="背景色"
-            >
-              <ColorPickerField
-                props={props}
-                propsWithParent={propsWithParent}
-                prop="backgroundColor"
-                setProps={setProps}
-              />
-              <TextInput
-                disabled={props.backgroundColor == null}
-                size="xs"
-                w={w}
-                value={propsWithParent.backgroundColor}
-                onChange={(e) =>
-                  setProps({ backgroundColor: e.currentTarget.value })
-                }
-              />
-            </WithPartial>
-          </Group>
-          <WithPartial
-            prop="fontFamily"
-            value={props.fontFamily}
-            label="フォント"
-          >
-            <FontSelector
-              disabled={props.fontFamily == null}
-              fontFamily={propsWithParent.fontFamily}
-              setFontFamily={(value) => setProps({ fontFamily: value })}
-              fonts={fonts}
-            />
-          </WithPartial>
-          <Group>
-            <WithPartial
-              prop="fontSize"
-              value={props.fontSize}
-              label="文字サイズ"
-            >
-              <NumberInput
-                disabled={props.fontSize == null}
-                size="xs"
-                w={w}
-                value={propsWithParent.fontSize}
-                onChange={(value) => setProps({ fontSize: Number(value) })}
-              />
-              <Slider
-                disabled={props.fontSize == null}
-                value={propsWithParent.fontSize}
-                step={1}
-                min={6}
-                max={160}
-                onChange={(value) => setProps({ fontSize: Number(value) })}
-              />
-            </WithPartial>
-            <WithPartial
-              prop="lineHeight"
-              value={props.lineHeight}
-              label="行の高さ"
-            >
-              <NumberInput
-                disabled={props.lineHeight == null}
-                size="xs"
-                w={w}
-                value={propsWithParent.lineHeight}
-                onChange={(value) => setProps({ lineHeight: Number(value) })}
-                step={0.1}
-              />
-              <Slider
-                disabled={props.lineHeight == null}
-                value={propsWithParent.lineHeight}
-                step={0.1}
-                min={0.5}
-                max={2}
-                onChange={(value) => setProps({ lineHeight: Number(value) })}
-              />
-            </WithPartial>
-          </Group>
-          <Group>
-            <WithPartial
-              prop="outlineWidth"
-              value={props.outlineWidth}
-              label="ふち幅"
-            >
-              <NumberInput
-                disabled={props.outlineWidth == null}
-                size="xs"
-                w={w}
-                value={propsWithParent.outlineWidth}
-                onChange={(value) => setProps({ outlineWidth: Number(value) })}
-              />
-              <Slider
-                disabled={props.outlineWidth == null}
-                value={propsWithParent.outlineWidth}
-                step={1}
-                min={0}
-                max={30}
-                onChange={(value) => setProps({ outlineWidth: Number(value) })}
-              />
-            </WithPartial>
-            <WithPartial prop="scaleX" value={props.scaleX} label="伸縮率">
-              <NumberInput
-                disabled={props.scaleX == null}
-                step={0.1}
-                size="xs"
-                w={w}
-                value={propsWithParent.scaleX}
-                onChange={(value) => setProps({ scaleX: Number(value) })}
-              />
-              <Slider
-                disabled={props.scaleX == null}
-                value={propsWithParent.scaleX}
-                step={0.01}
-                min={0.2}
-                max={2}
-                onChange={(value) => setProps({ scaleX: Number(value) })}
-              />
-            </WithPartial>
-          </Group>
-          <Group>
-            <WithPartial
-              prop="outlineColor"
-              value={props.outlineColor}
-              label="ふち色"
-            >
-              <ColorPickerField
-                props={props}
-                propsWithParent={propsWithParent}
-                prop="outlineColor"
-                setProps={setProps}
-              />
-              <TextInput
-                disabled={props.outlineColor == null}
-                size="xs"
-                w={w}
-                value={propsWithParent.outlineColor}
-                onChange={(e) =>
-                  setProps({ outlineColor: e.currentTarget.value })
-                }
-              />
-            </WithPartial>
-            <Stack>
-              <WithPartial
-                prop="textAlign"
-                value={props.textAlign}
-                label="揃え"
-              >
-                <SegmentedControl
-                  disabled={props.textAlign == null}
-                  size="xs"
-                  value={propsWithParent.textAlign}
-                  onChange={(value) =>
-                    setProps({ textAlign: value as CanvasTextAlign })
-                  }
-                  data={
-                    [
-                      { value: "left", label: "左" },
-                      { value: "center", label: "中央" },
-                      { value: "right", label: "右" },
-                    ] satisfies { value: CanvasTextAlign; label: string }[]
-                  }
-                />
-              </WithPartial>
-              <WithPartial
-                prop="fontWeight"
-                value={props.fontWeight}
-                label="太字"
-              >
-                <Checkbox
-                  disabled={props.fontWeight == null}
-                  size="xs"
-                  checked={propsWithParent.fontWeight === "bold"}
-                  onChange={(e) =>
-                    setProps({
-                      fontWeight: e.currentTarget.checked ? "bold" : "normal",
-                    })
-                  }
-                />
-              </WithPartial>
-              <WithPartial
-                prop="outlineType"
-                value={props.outlineType}
-                label="ぼかし"
-              >
-                <Checkbox
-                  disabled={props.outlineType == null}
-                  size="xs"
-                  checked={propsWithParent.outlineType === "blur"}
-                  onChange={(e) =>
-                    setProps({
-                      outlineType: e.currentTarget.checked ? "blur" : "thick",
-                    })
-                  }
-                />
-              </WithPartial>
-            </Stack>
-          </Group>
-        </Stack>
+        <VisualPropsFields
+          required={required}
+          props={props}
+          setProps={setProps}
+          withParentVisualProps={withParentVisualProps}
+          fonts={fonts}
+        />
       </Popover.Dropdown>
     </Popover>
   );

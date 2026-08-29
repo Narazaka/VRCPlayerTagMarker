@@ -9,8 +9,13 @@ import {
   IoCopyOutline,
 } from "react-icons/io5";
 import type { EditMode } from "./EditMode";
+import TagPropsView from "./TagPropsView";
 import type { CellProps } from "./util/CellProps";
-import type { WithParentVisualProps } from "./util/VisualProps";
+import { applyTagsToSelection } from "./util/richText";
+import type {
+  PartialVisualProps,
+  WithParentVisualProps,
+} from "./util/VisualProps";
 import VisualPropsView from "./VisualPropsView";
 
 function CellPropsView({
@@ -70,7 +75,44 @@ function CellPropsView({
     }
   }, [cellId]);
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [selection, setSelection] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
+  const handleSelect = useCallback(
+    (event: React.SyntheticEvent<HTMLTextAreaElement>) => {
+      const { selectionStart, selectionEnd } = event.currentTarget;
+      setSelection(
+        selectionStart === selectionEnd
+          ? null
+          : { start: selectionStart, end: selectionEnd },
+      );
+    },
+    [],
+  );
+
   const propsWithParent = withParentVisualProps(props);
+  const handleApplyTags = useCallback(
+    (tagProps: PartialVisualProps) => {
+      if (!selection) return;
+      const applied = applyTagsToSelection({
+        text: props?.text ?? "",
+        start: selection.start,
+        end: selection.end,
+        props: tagProps,
+        base: propsWithParent,
+      });
+      setProps({ text: applied.text });
+      setSelection({ start: applied.start, end: applied.end });
+      // タグを足した分ずれるので、囲んだ範囲を選び直す
+      requestAnimationFrame(() => {
+        textareaRef.current?.focus();
+        textareaRef.current?.setSelectionRange(applied.start, applied.end);
+      });
+    },
+    [selection, props, setProps, propsWithParent],
+  );
   return (
     // biome-ignore lint/a11y/useSemanticElements: hover detection for showing action buttons
     <div
@@ -175,6 +217,8 @@ function CellPropsView({
           &#x2630;
         </span>
         <Textarea
+          ref={textareaRef}
+          onSelect={handleSelect}
           size="xs"
           variant="unstyled"
           autosize
@@ -200,6 +244,13 @@ function CellPropsView({
           withParentVisualProps={withParentVisualProps}
           fonts={fonts}
         />
+        {selection && (
+          <TagPropsView
+            withParentVisualProps={withParentVisualProps}
+            fonts={fonts}
+            onApply={handleApplyTags}
+          />
+        )}
       </Group>
     </div>
   );
