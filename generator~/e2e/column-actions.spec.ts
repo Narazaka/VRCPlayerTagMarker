@@ -4,7 +4,7 @@ import { setMode } from "./helpers";
 test.describe("Column actions", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("table td input").first()).toBeVisible();
+    await expect(page.locator("table td textarea").first()).toBeVisible();
   });
 
   /** テーブルのtdセル内のinput値を行×列の2D配列で取得する */
@@ -12,7 +12,7 @@ test.describe("Column actions", () => {
     const rows = await page.locator("table tbody tr").all();
     const result: string[][] = [];
     for (const row of rows.slice(1)) {
-      const inputs = await row.locator("td input").all();
+      const inputs = await row.locator("td textarea").all();
       const texts: string[] = [];
       for (const input of inputs) {
         texts.push(await input.inputValue());
@@ -23,7 +23,7 @@ test.describe("Column actions", () => {
   }
 
   test("+ボタンで空列が挿入される", async ({ page }) => {
-    const inputs = await page.locator("table td input").all();
+    const inputs = await page.locator("table td textarea").all();
     await inputs[0].fill("A");
     await inputs[1].fill("B");
     await inputs[2].fill("C");
@@ -61,7 +61,7 @@ test.describe("Column actions", () => {
       await dialog.accept();
     });
 
-    const inputs = await page.locator("table td input").all();
+    const inputs = await page.locator("table td textarea").all();
     await inputs[0].fill("A");
     await inputs[1].fill("B");
     await inputs[2].fill("C");
@@ -86,7 +86,7 @@ test.describe("Column actions", () => {
       await dialog.dismiss();
     });
 
-    const inputs = await page.locator("table td input").all();
+    const inputs = await page.locator("table td textarea").all();
     await inputs[0].fill("A");
     await inputs[1].fill("B");
 

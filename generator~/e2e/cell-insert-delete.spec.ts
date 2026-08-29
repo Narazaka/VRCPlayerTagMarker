@@ -4,7 +4,7 @@ import { setMode } from "./helpers";
 test.describe("Cell insert/delete", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("table td input").first()).toBeVisible();
+    await expect(page.locator("table td textarea").first()).toBeVisible();
   });
 
   /** テーブルのtdセル内のinput値を行×列の2D配列で取得する */
@@ -13,7 +13,7 @@ test.describe("Cell insert/delete", () => {
     const result: string[][] = [];
     // 先頭行はヘッダー（th）なのでスキップ
     for (const row of rows.slice(1)) {
-      const inputs = await row.locator("td input").all();
+      const inputs = await row.locator("td textarea").all();
       const texts: string[] = [];
       for (const input of inputs) {
         texts.push(await input.inputValue());
@@ -45,7 +45,7 @@ test.describe("Cell insert/delete", () => {
     test("中央セルを削除すると同じ行内で左にシフトする", async ({ page }) => {
       page.on("dialog", (d) => d.accept());
 
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       await inputs[0].fill("A");
       await inputs[1].fill("B");
       await inputs[2].fill("C");
@@ -64,7 +64,7 @@ test.describe("Cell insert/delete", () => {
 
       // デフォルト3列。各行の3列目だけにデータがない状態で、
       // 行0の列1を削除 → 行0は [A, C, ""] → 列2は他行も空なら列数減
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       await inputs[0].fill("A");
       await inputs[1].fill("B");
       // inputs[2] は空のまま（列2）
@@ -80,7 +80,7 @@ test.describe("Cell insert/delete", () => {
     test("確認ダイアログでキャンセルすると削除されない", async ({ page }) => {
       page.on("dialog", (d) => d.dismiss());
 
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       await inputs[0].fill("A");
       await inputs[1].fill("B");
 
@@ -98,7 +98,7 @@ test.describe("Cell insert/delete", () => {
       page.on("dialog", (d) => d.accept());
 
       // 列0の各行に入力
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       const col = 3; // デフォルト3列
       await inputs[0].fill("A");
       await inputs[col].fill("B");
@@ -116,7 +116,7 @@ test.describe("Cell insert/delete", () => {
     test("確認ダイアログでキャンセルすると削除されない", async ({ page }) => {
       page.on("dialog", (d) => d.dismiss());
 
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       await inputs[0].fill("A");
 
       await hoverCellAndClick(page, 0, 0, "セルを削除（上に詰める）");
@@ -129,7 +129,7 @@ test.describe("Cell insert/delete", () => {
 
   test.describe("セル挿入（右にシフト）", () => {
     test("左辺ボタンでセルが右にシフトする", async ({ page }) => {
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       await inputs[0].fill("A");
       await inputs[1].fill("B");
       await inputs[2].fill("C");
@@ -144,7 +144,7 @@ test.describe("Cell insert/delete", () => {
     });
 
     test("末尾が非空なら列数が増える", async ({ page }) => {
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       await inputs[0].fill("A");
       await inputs[1].fill("B");
       await inputs[2].fill("C");
@@ -162,7 +162,7 @@ test.describe("Cell insert/delete", () => {
     });
 
     test("右辺ボタンで右隣に挿入される", async ({ page }) => {
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       await inputs[0].fill("A");
       await inputs[1].fill("B");
 
@@ -178,7 +178,7 @@ test.describe("Cell insert/delete", () => {
 
   test.describe("セル挿入（下にシフト）", () => {
     test("上辺ボタンでセルが下にシフトする", async ({ page }) => {
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       const col = 3;
       await inputs[0].fill("A");
       await inputs[col].fill("B");
@@ -195,7 +195,7 @@ test.describe("Cell insert/delete", () => {
     });
 
     test("末尾が非空なら行数が増える", async ({ page }) => {
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       const col = 3;
       await inputs[0].fill("A");
       await inputs[col].fill("B");
@@ -217,7 +217,7 @@ test.describe("Cell insert/delete", () => {
 
     test("末尾行が空でもデータが消失しない", async ({ page }) => {
       // バグ再現: row=4だがcells配列が3行分→insertCellShiftDownで消失
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       const col = 3;
       await inputs[0].fill("A");
       await inputs[col].fill("B");
@@ -235,7 +235,7 @@ test.describe("Cell insert/delete", () => {
     });
 
     test("下辺ボタンで下のセル位置に挿入される", async ({ page }) => {
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       const col = 3;
       await inputs[0].fill("A");
       await inputs[col].fill("B");
@@ -254,7 +254,7 @@ test.describe("Cell insert/delete", () => {
     test("削除後に最下行が全列空なら行数が減る", async ({ page }) => {
       page.on("dialog", (d) => d.accept());
 
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       const col = 3;
       // 行0と行1の列0にデータ入力（行2,3は空）
       await inputs[0].fill("A");
@@ -277,7 +277,7 @@ test.describe("Cell insert/delete", () => {
     }) => {
       page.on("dialog", (d) => d.accept());
 
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       // デフォルト3列。列0のみにデータ、列1,2は空
       await inputs[0].fill("A");
 
@@ -296,7 +296,7 @@ test.describe("Cell insert/delete", () => {
     }) => {
       page.on("dialog", (d) => d.accept());
 
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       // 行0のみにデータ、行1,2,3は空
       await inputs[0].fill("A");
 
@@ -313,7 +313,7 @@ test.describe("Cell insert/delete", () => {
 
   test.describe("挿入時にサイズが維持されるケース", () => {
     test("末尾が空なら列数は増えない", async ({ page }) => {
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       // デフォルト3列。列0,1にデータ、列2は空
       await inputs[0].fill("A");
       await inputs[1].fill("B");
@@ -330,7 +330,7 @@ test.describe("Cell insert/delete", () => {
     });
 
     test("末尾が空なら行数は増えない", async ({ page }) => {
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       const col = 3;
       // 行0,1にデータ、行2,3は空
       await inputs[0].fill("A");
@@ -410,7 +410,7 @@ test.describe("Cell insert/delete", () => {
     test("ドラッグ中は挿入/削除ボタンが表示されない", async ({ page }) => {
       await setMode(page, "挿入");
       // セルにテキストを入力（ドラッグハンドルが表示されるように）
-      const inputs = await page.locator("table td input").all();
+      const inputs = await page.locator("table td textarea").all();
       await inputs[0].fill("A");
       await inputs[1].fill("B");
 

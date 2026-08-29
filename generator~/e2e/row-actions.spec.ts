@@ -4,7 +4,7 @@ import { setMode } from "./helpers";
 test.describe("Row actions", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("table td input").first()).toBeVisible();
+    await expect(page.locator("table td textarea").first()).toBeVisible();
   });
 
   test("+ボタンで空行が挿入される", async ({ page }) => {

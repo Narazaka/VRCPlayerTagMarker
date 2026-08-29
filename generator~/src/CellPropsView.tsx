@@ -1,5 +1,5 @@
 import { useDndContext, useDraggable } from "@dnd-kit/core";
-import { ActionIcon, Button, Group, TextInput, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, Group, Textarea, Tooltip } from "@mantine/core";
 import chroma from "chroma-js";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -174,9 +174,11 @@ function CellPropsView({
         >
           &#x2630;
         </span>
-        <TextInput
+        <Textarea
           size="xs"
           variant="unstyled"
+          autosize
+          minRows={1}
           styles={{
             input: {
               color:
