@@ -7,7 +7,7 @@ const tags: [tag: string, description: string][] = [
   ["<size=24>", "文字サイズ（px）"],
   ["<color=#f00>", "文字色"],
   ["<b>", "太字"],
-  ['<font="フォント名">', "フォント"],
+  ["<font=フォント名>", "フォント"],
   ["<outlineWidth=4>", "ふち幅（px）"],
   ["<outlineColor=#000>", "ふち色"],
   ["<outlineType=thick>", "ふちの種類（thick / blur）"],

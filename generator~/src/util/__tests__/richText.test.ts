@@ -63,6 +63,12 @@ describe("parseRichText", () => {
     expect(parse("<outlineWidth=4>あ", 2)[0].props.outlineWidth).toBe(8);
   });
 
+  it("フォント名のクォートは省略でき、書き出したタグを読み直せる", () => {
+    expect(parse("<font=My Font>あ")[0].props.fontFamily).toBe("My Font");
+    const { open } = toRichTextTags({ fontFamily: 'My "Font"' });
+    expect(parse(`${open}あ`)[0].props.fontFamily).toBe('My "Font"');
+  });
+
   it("タグ名は大文字小文字を区別しない", () => {
     expect(parse("<SIZE=50%>あ")[0].props.fontSize).toBe(base.fontSize / 2);
   });
@@ -113,7 +119,7 @@ describe("toRichTextTags", () => {
         scaleX: 1.5,
       }).open,
     ).toBe(
-      '<font="My Font"><outlineWidth=4><outlineColor=#0f0><outlineType=thick><scaleX=1.5>',
+      "<font=My Font><outlineWidth=4><outlineColor=#0f0><outlineType=thick><scaleX=1.5>",
     );
   });
 });

@@ -106,8 +106,9 @@ function writeTag(
     // normal に戻すタグは無いので、太字のときだけ書ける
     case "fontWeight":
       return props.fontWeight === "bold" ? "<b>" : null;
+    // 値にクォートが含まれていても壊れないよう、書き出しでは付けない（読み取りは有無どちらも可）
     case "fontFamily":
-      return `<font="${props.fontFamily}">`;
+      return `<font=${props.fontFamily}>`;
     case "outlineWidth":
       return `<outlineWidth=${props.outlineWidth}>`;
     case "outlineColor":
