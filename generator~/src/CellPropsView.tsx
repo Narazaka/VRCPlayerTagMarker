@@ -8,11 +8,13 @@ import {
   IoCheckmark,
   IoCopyOutline,
 } from "react-icons/io5";
+import type { EditMode } from "./EditMode";
 import type { CellProps } from "./util/CellProps";
 import type { WithParentVisualProps } from "./util/VisualProps";
 import VisualPropsView from "./VisualPropsView";
 
 function CellPropsView({
+  mode,
   props,
   setProps,
   withParentVisualProps,
@@ -22,6 +24,7 @@ function CellPropsView({
   onDeleteLeft,
   onDeleteUp,
 }: {
+  mode: EditMode;
   props: CellProps | undefined;
   setProps: (newTitle: Partial<CellProps>) => void;
   withParentVisualProps: WithParentVisualProps;
@@ -80,7 +83,7 @@ function CellPropsView({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {showButtons && (
+      {showButtons && mode === "delete" && (
         <Group
           gap={2}
           style={{
@@ -110,7 +113,7 @@ function CellPropsView({
           </ActionIcon>
         </Group>
       )}
-      {showButtons && hasText && (
+      {showButtons && mode === "copyId" && hasText && (
         <Group
           gap={2}
           style={{

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { setMode } from "./helpers";
 
 test.describe("Row actions", () => {
   test.beforeEach(async ({ page }) => {
@@ -8,6 +9,7 @@ test.describe("Row actions", () => {
 
   test("+ボタンで空行が挿入される", async ({ page }) => {
     const rowsBefore = await page.locator("table tbody tr").count();
+    await setMode(page, "挿入");
     const insertButtons = await page.getByTitle("行を下に挿入").all();
     await insertButtons[0].click();
     const rowsAfter = await page.locator("table tbody tr").count();
@@ -21,6 +23,7 @@ test.describe("Row actions", () => {
       await dialog.dismiss();
     });
 
+    await setMode(page, "削除");
     const deleteButtons = await page.getByTitle("行を削除").all();
     await deleteButtons[0].click();
 
@@ -33,6 +36,7 @@ test.describe("Row actions", () => {
     });
 
     const rowsBefore = await page.locator("table tbody tr").count();
+    await setMode(page, "削除");
     const deleteButtons = await page.getByTitle("行を削除").all();
     await deleteButtons[0].click();
     await page.waitForTimeout(200);

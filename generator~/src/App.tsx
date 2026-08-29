@@ -13,6 +13,7 @@ import {
   Grid,
   Group,
   NumberInput,
+  SegmentedControl,
   Slider,
   Stack,
   Text,
@@ -32,6 +33,7 @@ import {
 import CellPropsView from "./CellPropsView";
 import ColumnActions from "./ColumnActions";
 import DroppableCell from "./DroppableCell";
+import type { EditMode } from "./EditMode";
 import RowActions from "./RowActions";
 import type { CellProps } from "./util/CellProps";
 import { assignCellIds as assignCellIdsImpl } from "./util/cellIdAssigner";
@@ -84,6 +86,8 @@ function App() {
     defaultValue: fontsAllowedStatus.ask,
   });
   const fonts = useFonts(fontsAllowed === fontsAllowedStatus.allow);
+
+  const [mode, setMode] = useState<EditMode>("edit");
 
   const [fileName, setFileName] = useState("タグマーカー");
   const [col, setCol] = useState(3);
@@ -535,6 +539,16 @@ function App() {
             </Button>
           </Grid.Col>
         </Grid>
+        <SegmentedControl
+          value={mode}
+          onChange={(value) => setMode(value as EditMode)}
+          data={[
+            { value: "edit", label: "編集" },
+            { value: "insert", label: "挿入" },
+            { value: "delete", label: "削除" },
+            { value: "copyId", label: "IDコピー" },
+          ]}
+        />
         <DndContext
           sensors={sensors}
           collisionDetection={pointerWithin}
@@ -568,6 +582,7 @@ function App() {
                       fonts={fonts}
                     />
                     <ColumnActions
+                      mode={mode}
                       onInsertColumn={() => insertColumn(colIndex)}
                       onDeleteColumn={() => deleteColumn(colIndex)}
                     />
@@ -591,6 +606,7 @@ function App() {
                         fonts={fonts}
                       />
                       <RowActions
+                        mode={mode}
                         onInsertRow={() => insertRow(rowIndex)}
                         onDeleteRow={() => deleteRow(rowIndex)}
                       />
@@ -603,6 +619,7 @@ function App() {
                       <DroppableCell
                         // biome-ignore lint/suspicious/noArrayIndexKey: no id
                         key={colIndex}
+                        mode={mode}
                         row={rowIndex}
                         col={colIndex}
                         style={cellStyle}
@@ -616,6 +633,7 @@ function App() {
                         }
                       >
                         <CellPropsView
+                          mode={mode}
                           props={cell}
                           setProps={setCell[rowIndex][colIndex]}
                           withParentVisualProps={

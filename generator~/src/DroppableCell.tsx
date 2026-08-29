@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { IoAdd } from "react-icons/io5";
+import type { EditMode } from "./EditMode";
 
 const insertButtonBase: CSSProperties = {
   position: "absolute",
@@ -51,6 +52,7 @@ function InsertButton({
 }
 
 function DroppableCell({
+  mode,
   row,
   col,
   style,
@@ -60,6 +62,7 @@ function DroppableCell({
   onInsertTop,
   onInsertBottom,
 }: {
+  mode: EditMode;
   row: number;
   col: number;
   style?: CSSProperties;
@@ -81,7 +84,7 @@ function DroppableCell({
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
 
-  const showButtons = isHovered && !isAnyDragging;
+  const showButtons = isHovered && !isAnyDragging && mode === "insert";
 
   return (
     <td

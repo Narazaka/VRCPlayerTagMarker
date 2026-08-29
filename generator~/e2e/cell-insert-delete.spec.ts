@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { setMode } from "./helpers";
 
 test.describe("Cell insert/delete", () => {
   test.beforeEach(async ({ page }) => {
@@ -33,6 +34,7 @@ test.describe("Cell insert/delete", () => {
     const row = dataRows[rowIndex + 1]; // +1 でヘッダー行をスキップ
     const cells = await row.locator("td").all();
     const cell = cells[colIndex];
+    await setMode(page, buttonTitle.includes("削除") ? "削除" : "挿入");
     await cell.hover();
     await page.waitForTimeout(100);
     const button = page.getByTitle(buttonTitle).first();
@@ -349,6 +351,7 @@ test.describe("Cell insert/delete", () => {
 
   test.describe("ホバーUI表示", () => {
     test("セルにホバーすると挿入ボタンが表示される", async ({ page }) => {
+      await setMode(page, "挿入");
       const dataRows = await page.locator("table tbody tr").all();
       const row = dataRows[1]; // 最初のデータ行
       const cell = (await row.locator("td").all())[0];
@@ -377,6 +380,7 @@ test.describe("Cell insert/delete", () => {
     });
 
     test("セルにホバーすると削除ボタンが表示される", async ({ page }) => {
+      await setMode(page, "削除");
       const dataRows = await page.locator("table tbody tr").all();
       const row = dataRows[1];
       const cell = (await row.locator("td").all())[0];
@@ -388,7 +392,23 @@ test.describe("Cell insert/delete", () => {
       await expect(page.getByTitle("セルを削除（上に詰める）")).toBeVisible();
     });
 
+    test("編集モードではホバーしてもボタンが表示されない", async ({ page }) => {
+      const dataRows = await page.locator("table tbody tr").all();
+      const cell = (await dataRows[1].locator("td").all())[0];
+
+      await cell.hover();
+      await page.waitForTimeout(100);
+
+      await expect(
+        page.getByTitle("ここにセルを挿入（右にシフト）"),
+      ).toHaveCount(0);
+      await expect(page.getByTitle("セルを削除（左に詰める）")).toHaveCount(0);
+      await expect(page.getByTitle("行を削除")).toHaveCount(0);
+      await expect(page.getByTitle("列を右に挿入")).toHaveCount(0);
+    });
+
     test("ドラッグ中は挿入/削除ボタンが表示されない", async ({ page }) => {
+      await setMode(page, "挿入");
       // セルにテキストを入力（ドラッグハンドルが表示されるように）
       const inputs = await page.locator("table td input").all();
       await inputs[0].fill("A");

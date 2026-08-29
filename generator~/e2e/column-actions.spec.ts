@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { setMode } from "./helpers";
 
 test.describe("Column actions", () => {
   test.beforeEach(async ({ page }) => {
@@ -28,6 +29,7 @@ test.describe("Column actions", () => {
     await inputs[2].fill("C");
 
     // 列0の右に挿入
+    await setMode(page, "挿入");
     const insertButtons = await page.getByTitle("列を右に挿入").all();
     await insertButtons[0].click();
     await page.waitForTimeout(300);
@@ -47,6 +49,7 @@ test.describe("Column actions", () => {
       await dialog.dismiss();
     });
 
+    await setMode(page, "削除");
     const deleteButtons = await page.getByTitle("列を削除").all();
     await deleteButtons[0].click();
 
@@ -67,6 +70,7 @@ test.describe("Column actions", () => {
     const colsBefore = textsBefore[0].length;
 
     // 列1(B)を削除
+    await setMode(page, "削除");
     const deleteButtons = await page.getByTitle("列を削除").all();
     await deleteButtons[1].click();
     await page.waitForTimeout(300);
@@ -86,6 +90,7 @@ test.describe("Column actions", () => {
     await inputs[0].fill("A");
     await inputs[1].fill("B");
 
+    await setMode(page, "削除");
     const deleteButtons = await page.getByTitle("列を削除").all();
     await deleteButtons[0].click();
     await page.waitForTimeout(200);
@@ -101,9 +106,11 @@ test.describe("Column actions", () => {
     });
 
     // 列を1つまで減らす（3列→2→1）
+    await setMode(page, "削除");
     const deleteButtons1 = await page.getByTitle("列を削除").all();
     await deleteButtons1[0].click();
     await page.waitForTimeout(200);
+    await setMode(page, "削除");
     const deleteButtons2 = await page.getByTitle("列を削除").all();
     await deleteButtons2[0].click();
     await page.waitForTimeout(200);
@@ -112,6 +119,7 @@ test.describe("Column actions", () => {
     const texts = await getCellTexts(page);
     expect(texts[0].length).toBe(1);
 
+    await setMode(page, "削除");
     const deleteButtons3 = await page.getByTitle("列を削除").all();
     await deleteButtons3[0].click();
     await page.waitForTimeout(200);
