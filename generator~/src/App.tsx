@@ -384,6 +384,7 @@ function App() {
       cellWidth: cellWidth * resolution,
       cellHeight: cellHeight * resolution,
       spacing: spacing * resolution,
+      scale: resolution,
       cells: Array.from({ length: row }).map((_, rowIndex) =>
         Array.from({ length: col }).map((_, colIndex) => {
           const resolved = withRowColVisuals[rowIndex][colIndex](
